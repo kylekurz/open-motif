@@ -1,0 +1,6 @@
+#summary Here we present a quick overview over the different components of OpenMotif.
+#labels OpenMotif,MotifDiscovery,ModuleDiscovery
+
+= Introduction =
+
+OpenMotif is a bioinformatics framework that supports the discovery of motifs and composite motifs.
