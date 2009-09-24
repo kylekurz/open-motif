@@ -756,6 +756,11 @@ string radix_trie::get_next_word(int length)
 	return unconvert(ret_word);
 }
 
+//function to iterate through the subtree and find all occurring words of length x, //from a given seed of length y string 
+radix_trie::get_next_extension(string seed, int length)
+{
+}
+
 //function to mutate a string to the next physical permutation
 void radix_trie::mutate(string &previous_word)
 {

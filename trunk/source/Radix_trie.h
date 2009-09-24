@@ -53,6 +53,8 @@ class radix_trie : public data
 		vector<string> get_seq_file();
 		//function to iterate through the words contained in the data structure
 		string get_next_word(int length);
+		//function to iterate through the entire subtree from a given word
+		string get_next_extension(string seed, int length);
 		//function to output information
 		void output();
 		
