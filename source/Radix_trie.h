@@ -132,6 +132,7 @@ class radix_trie : public data
 		vector<string> last_word;
 		vector<radix_trie_node *> last_loc;
 		int next_branch;	
+		bool flag;
 };
 
 #endif

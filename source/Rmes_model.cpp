@@ -143,54 +143,74 @@ double rmes_model::condAsExpect(const Word &w, const short m, data *structure)
 //*compute condAsVar with data*structure instead of Counter
 double rmes_model::condAsVar(const Word &w, const short m, data *structure)
 {
-    double var = 0.0;
-    Counter subWordCounter(m + 1, m + 1);
-    double expect = condAsExpect(w, m, structure);
-    if (expect != 0.0) {
-        Counter subWordCounter(m + 1, m + 1);
-        subWordCounter.countWords(w);
-        
-  //      double num_Words=std::pow(double(Alphabet::alphabet->size()) , m+1);
-  //      for (long wordIndex = 0; wordIndex < num_Words / Alphabet::alphabet->factor(); wordIndex++) 
-{//for 1
-    string next_word="";
-    string nw="";
-    std::stringstream stream;
-    stream << w;
-    stream >> nw;
-    next_word = get_next_extension(nw,m+1); 
-    while(next_word.compare("") != 0)
-    {
-            double q1 = 0.0;
-            std::stringstream stream_1;
-            string word_1;
-            q1 += double(structure->get_count(next_word));
-            if (q1 > 0.0) {
-                double q2 = 0;
-                for (long baseIndex = 0; baseIndex < Alphabet::alphabet->size(); baseIndex++) {
-                    q2 += double(subWordCounter.wordCount(m + 1, Alphabet::alphabet->factor() * wordIndex + baseIndex));
-                }
-                var += (q2 * q2) / q1;
-                std::stringstream stream_2;
-                std::string word_2;
-                std::stringstream stream_3;
-                std::string word_3;
-                for (long baseIndex = 0; baseIndex < Alphabet::alphabet->size(); baseIndex++) {
-                    long neighborIndex = Alphabet::alphabet->factor() * wordIndex + baseIndex;
-                    stream_2.clear();
-                    stream_2 << Word(m + 1, neighborIndex);
-                    stream_2 >> word_2;
-                    if (structure->get_count(word_2) > 0) {
-                        stream_3.clear();
-                        stream_3 << Word(m + 1, neighborIndex);
-                        stream_3 >> word_3;
-                        var -= double(subWordCounter.wordCount(m + 1, neighborIndex) * subWordCounter.wordCount(m + 1, neighborIndex)) / double(structure->get_count(word_3));
-                    }
-                }
-            }
+	double var = 0.0;
+ 	//long baseIndex = 0;
+    	//long wordIndex = 0;
+    	double q1 = 0.0;
+    	Counter subWordCounter(m + 1, m + 1);
+    	std::stringstream stream_1;
+    	string word_1;
+    	stream_1.clear();
+    	stream_1 << w;
+    	stream_1 >> word_1;
+    	cout << "word 1 = " << word_1 << endl;
+    	double expect = condAsExpect(w, m, structure);
+    	if (expect != 0.0) {
+    		//Counter subWordCounter(m + 1, m + 1);
+        	//subWordCounter.countWords(w);
+        	//double my_q1 = 0.0;
+        	string sw = structure->get_next_extension(word_1.substr(0,m), m+1);
+        	cout << "sw " << sw << endl;
+    		while(sw.compare("") != 0)
+    		{
+	    		cout << "sw " << sw << endl;
+	    		q1 += structure->get_count(sw);
+	    		sw = structure->get_next_extension(word_1.substr(0,m), m+1);
+    		}
+		if (q1 > 0.0) {
+        		double q2 = 0;
+        		vector<string> known_words;
+        		for(int i=0; i<static_cast<int>(word_1.length()-(m+1)); i++)
+        		{
+        			string sub = word_1.substr(i, m+1);
+        			cout << sub << endl;
+        			if(find(known_words.begin(), known_words.end(), sub) == known_words.end())
+ 		       		{
+ 		       			cout << "new word " << endl;
+ 		       			known_words.push_back(sub);
+        				int found=1;
+        				found = word_1.find(sub);
+        				cout << "outer found " << found << endl;
+        				while(found != -1)
+        				{
+        					q2++;
+        					found = word_1.find(sub, found+1);
+        					cout << "inner found " << found << endl;
+        				}
+        			}
+        		}
+                	var += (q2 * q2) / q1;
+                	cout << "q1 " << q1 << endl << "q2 = " << q2 << endl << "var = " << var << endl;
+                	/*std::stringstream stream_2;
+                	std::string word_2;
+                	std::stringstream stream_3;
+                	std::string word_3;
+                	for (long baseIndex = 0; baseIndex < Alphabet::alphabet->size(); baseIndex++) {
+                    		long neighborIndex = Alphabet::alphabet->factor() * wordIndex + baseIndex;
+                    		stream_2.clear();
+                    		stream_2 << Word(m + 1, neighborIndex);
+                    		stream_2 >> word_2;
+                    		if (structure->get_count(word_2) > 0) {
+                        		stream_3.clear();
+                        		stream_3 << Word(m + 1, neighborIndex);
+                        		stream_3 >> word_3;
+                        		var -= double(subWordCounter.wordCount(m + 1, neighborIndex) * subWordCounter.wordCount(m + 1, neighborIndex)) / double(structure->get_count(word_3));
+                    		}
+                	}*/
+            	}
         }
 	    
-        long firstIndex = w.substring(0, m - 1);
+        /*long firstIndex = w.substring(0, m - 1);
         long seqCounts = 0;
         long wordCounts = 0;
         std::stringstream stream_4;
@@ -211,11 +231,8 @@ double rmes_model::condAsVar(const Word &w, const short m, data *structure)
             auto_ptr<Word> overlapWord(w.overlaps(d));
             if (overlapWord.get())
                 var += 2.0 * condAsExpect(*overlapWord.get(), m, structure);
-        }
-
-    }
-    
-    return var;
+        }*/
+    	return var;
 
 }
 

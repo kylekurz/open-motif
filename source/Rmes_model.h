@@ -2,6 +2,7 @@
 #include <cstdlib>  
 #include <fstream>  
 #include <iostream> 
+#include <memory>
 #include <pthread.h>
 #include <stdlib.h> 
 #include <string.h> 

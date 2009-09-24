@@ -43,6 +43,7 @@ radix_trie::~radix_trie()
 #ifdef KKURZ_MPI
 void* listener(void *_Object) 
 {
+	flag=0;
 	args *p = (args *)_Object;
 	int length = p->my_list->maxlength+1;
 	int done = 1;
@@ -757,8 +758,17 @@ string radix_trie::get_next_word(int length)
 }
 
 //function to iterate through the subtree and find all occurring words of length x, //from a given seed of length y string 
-radix_trie::get_next_extension(string seed, int length)
+string radix_trie::get_next_extension(string seed, int length)
 {
+	seed = convert(seed);
+	cout << "extension word = " << seed << endl;
+	if(flag)
+	{
+		flag = 0;
+		return "AAA";
+	}
+	else
+		return "";
 }
 
 //function to mutate a string to the next physical permutation
