@@ -53,6 +53,8 @@ class radix_trie : public data
 		vector<string> get_seq_file();
 		//function to iterate through the words contained in the data structure
 		string get_next_word(int length);
+		//function to iterate through the words contained in the data structure from a temporary root
+		string get_next_word(radix_trie_node *temp_root, int length);
 		//function to iterate through the entire subtree from a given word
 		string get_next_extension(string seed, int length);
 		//function to output information
@@ -131,6 +133,8 @@ class radix_trie : public data
 		//store the last reported word
 		vector<string> last_word;
 		vector<radix_trie_node *> last_loc;
+		vector<string> last_ext;
+		vector<radix_trie_node *> last_ext_loc;
 		int next_branch;	
 		bool flag;
 };
