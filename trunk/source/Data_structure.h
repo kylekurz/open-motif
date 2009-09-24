@@ -90,6 +90,8 @@ class data
 		
 		//function to iterate through the words contained in the data structure
 		virtual string get_next_word(int length)=0;
+		//function to get all words of length x given a seed of length y
+		virtual string get_next_extension(string seed, int length)=0;
 		//function to output information
 		virtual void output()=0;
 		

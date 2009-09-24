@@ -40,11 +40,4 @@ class radix_trie_node
 								// actually need 5, including 'n'
 };
 
-//struct for storing the info about last visited words
-typedef struct VSTRUCT {
-	radix_trie_node* loc;
-	int last_branch;
-	string current_word;
-};
-
 #endif
