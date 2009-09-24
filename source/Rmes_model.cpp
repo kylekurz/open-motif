@@ -150,17 +150,21 @@ double rmes_model::condAsVar(const Word &w, const short m, data *structure)
         Counter subWordCounter(m + 1, m + 1);
         subWordCounter.countWords(w);
         
-        double num_Words=std::pow(double(Alphabet::alphabet->size()) , m+1);
-        for (long wordIndex = 0; wordIndex < num_Words / Alphabet::alphabet->factor(); wordIndex++) {//for 1
+  //      double num_Words=std::pow(double(Alphabet::alphabet->size()) , m+1);
+  //      for (long wordIndex = 0; wordIndex < num_Words / Alphabet::alphabet->factor(); wordIndex++) 
+{//for 1
+    string next_word="";
+    string nw="";
+    std::stringstream stream;
+    stream << w;
+    stream >> nw;
+    next_word = get_next_extension(nw,m+1); 
+    while(next_word.compare("") != 0)
+    {
             double q1 = 0.0;
             std::stringstream stream_1;
             string word_1;
-            for (long baseIndex = 0; baseIndex < Alphabet::alphabet->size(); baseIndex++) {
-                stream_1.clear();
-                stream_1 << Word(m + 1, Alphabet::alphabet->factor() * wordIndex + baseIndex);
-                stream_1 >> word_1;
-                q1 += double(structure->get_count(word_1));
-            }
+            q1 += double(structure->get_count(next_word));
             if (q1 > 0.0) {
                 double q2 = 0;
                 for (long baseIndex = 0; baseIndex < Alphabet::alphabet->size(); baseIndex++) {
