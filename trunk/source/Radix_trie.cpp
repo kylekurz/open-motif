@@ -117,7 +117,9 @@ radix_trie::radix_trie(owef_args *from_input)
 	for(int i=0; i<list->maxlength; i++)
 	{
 		last_loc.push_back(temp);
+		last_ext_loc.push_back(temp);
 		last_word.push_back(word);
+		last_ext.push_back(word);
 	}
 	next_branch = 0;
 	//count the words
@@ -757,18 +759,146 @@ string radix_trie::get_next_word(int length)
 	return unconvert(ret_word);
 }
 
+//systematically returns EVERY word stored in the trie at a given length.  It is the caller's responsibility
+//to verify that the word meets any requirements of the job (i.e. min_O and min_seqs before output)
+string radix_trie::get_next_word(radix_trie_node *temp_root, int length)
+{
+	cout << length << endl;
+	string ret_word = "";
+	radix_trie_node *node = NULL;
+	//if we haven't returned anything yet...
+	if(last_ext_loc[length-1] == NULL && last_ext[length-1].compare("") == 0) 
+	{
+		//if we have a trie here...
+		if(temp_root && temp_root->branch)	
+		{
+			node = temp_root;
+			//hunt until we find a word long enough to be the "first"
+			while(static_cast<int>(ret_word.length()) < length) 
+			{
+				//if we can keep following this branch
+				if(node->branch && node->branch[next_branch]) 
+				{
+					char x = 'A'+next_branch;
+					ret_word += x;
+					node = node->branch[next_branch];
+					next_branch = 0;
+				}
+				//otherwise, gotta increment and look at the next branch
+				else 
+				{
+					next_branch++;
+					if (next_branch >= ALPH) {
+						while (next_branch >= ALPH) {
+							char branch_id = ret_word[ret_word.length()-1];
+							ret_word = ret_word.substr(0, ret_word.length()-1);
+							next_branch = (branch_id - 'A') + 1;
+							node = temp_root;
+							for (int i=0; i<static_cast<int>(ret_word.length()); i++) {
+								if(node && node->branch && node->branch[ret_word[i] - 'A']) {
+									node = node->branch[ret_word[i] - 'A'];
+								}
+							}
+							if(ret_word.length()==0 && next_branch >= ALPH)
+							{
+								last_ext_loc[length-1] = NULL;
+								last_ext[length-1].clear();
+								last_ext[length-1] = "";
+								return "";
+							}
+						}						
+					}
+				}
+			}
+			last_ext_loc[length-1] = node;
+			last_ext[length-1] = ret_word;
+			return unconvert(ret_word);
+		}
+	}
+	//otherwise we have something and can start from there...
+	else {
+		char branch_id = last_ext[length-1][last_ext[length-1].length()-1];
+		cout << branch_id << endl;
+		ret_word = last_ext[length-1].substr(0, last_ext[length-1].length()-1);
+		next_branch = (branch_id - 'A') + 1;
+		cout << "ret word " << ret_word << " next branch " << next_branch << endl;
+		node = temp_root;
+		for (int i=0; i<static_cast<int>(ret_word.length()); i++) {
+			if(node && node->branch && node->branch[ret_word[i] - 'A']) {
+				node = node->branch[ret_word[i] - 'A'];
+			}
+		}
+		//hunt until we find a word long enough to be the "first"
+		while(static_cast<int>(ret_word.length()) < length) 
+		{
+			cout << "in while" << next_branch << endl;
+			//if we can keep following this branch
+			//cout << next_branch << " " << branch_id << endl;
+			if(node && node->branch && node->branch[next_branch]) 
+			{
+				//cout << "in if" << endl;
+				char x = 'A'+next_branch;
+				ret_word += x;
+				//cout << "later loop " << ret_word << endl;
+				node = node->branch[next_branch];
+				next_branch = 0;
+			}
+			//otherwise, gotta increment and look at the next branch
+			else 
+			{
+				//cout << "in else" << endl;
+				next_branch++;
+				if (next_branch >= ALPH) {
+					char branch_id;
+					while (next_branch >= ALPH) {
+						branch_id = ret_word[ret_word.length()-1];					
+						ret_word = ret_word.substr(0, ret_word.length()-1);
+						//cout << "new sub " << ret_word << " branch " << next_branch << endl;
+						next_branch = (branch_id - 'A') + 1;
+						node = temp_root;
+						for (int i=0; i<static_cast<int>(ret_word.length()); i++) {
+							if(node && node->branch && node->branch[ret_word[i] - 'A']) {
+								node = node->branch[ret_word[i] - 'A'];
+							}
+						}
+						cout << "new sub " << ret_word << " branch " << next_branch << endl;
+						if(ret_word.compare("") == 0 && (next_branch >= ALPH || next_branch < 0))
+						{
+							cout << "returning" << endl;
+							last_ext_loc[length-1] = NULL;
+							last_ext[length-1].clear();
+							last_ext[length-1] = "";
+							return "";
+						}
+					}	
+				}
+			}
+		}
+	}	
+	last_ext_loc[length-1] = node;
+	last_ext[length-1] = ret_word;
+	return unconvert(ret_word);
+}
+
 //function to iterate through the subtree and find all occurring words of length x, //from a given seed of length y string 
 string radix_trie::get_next_extension(string seed, int length)
 {
 	seed = convert(seed);
-	cout << "extension word = " << seed << endl;
-	if(flag)
-	{
-		flag = 0;
-		return "AAA";
-	}
-	else
+	length -= seed.length();
+	radix_trie_node *temp_root;
+	temp_root = root;
+	for(int i=0; i<static_cast<int>(seed.length()); i++)
+		temp_root = temp_root->branch[seed[i]-'A'];
+	cout << "getting word " << seed << endl;
+	string t = get_next_word(temp_root, length);
+	cout << "t " << t << endl;
+	if(t.compare("")==0)
 		return "";
+	else
+	{
+		seed = unconvert(seed);
+		return seed.append(t);
+	}
 }
 
 //function to mutate a string to the next physical permutation

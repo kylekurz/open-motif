@@ -160,7 +160,7 @@ double rmes_model::condAsVar(const Word &w, const short m, data *structure)
         	//subWordCounter.countWords(w);
         	//double my_q1 = 0.0;
         	string sw = structure->get_next_extension(word_1.substr(0,m), m+1);
-        	cout << "sw " << sw << endl;
+        	//cout << "sw " << sw << endl;
     		while(sw.compare("") != 0)
     		{
 	    		cout << "sw " << sw << endl;
@@ -176,21 +176,21 @@ double rmes_model::condAsVar(const Word &w, const short m, data *structure)
         			cout << sub << endl;
         			if(find(known_words.begin(), known_words.end(), sub) == known_words.end())
  		       		{
- 		       			cout << "new word " << endl;
+ 		       			//cout << "new word " << endl;
  		       			known_words.push_back(sub);
         				int found=1;
         				found = word_1.find(sub);
-        				cout << "outer found " << found << endl;
+        				//cout << "outer found " << found << endl;
         				while(found != -1)
         				{
         					q2++;
         					found = word_1.find(sub, found+1);
-        					cout << "inner found " << found << endl;
+        					//cout << "inner found " << found << endl;
         				}
         			}
         		}
                 	var += (q2 * q2) / q1;
-                	cout << "q1 " << q1 << endl << "q2 = " << q2 << endl << "var = " << var << endl;
+                	//cout << "q1 " << q1 << endl << "q2 = " << q2 << endl << "var = " << var << endl;
                 	/*std::stringstream stream_2;
                 	std::string word_2;
                 	std::stringstream stream_3;
