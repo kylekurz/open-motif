@@ -26,6 +26,7 @@ rmes_model::rmes_model(owef_args *input_list,data *structure)
         int num_files = (list->maxlength - list->minlength)+1;
         //cout << "num files: " << num_files << endl;
         ofstream ofiles[num_files];
+        double d1=0,d2=0;
         for(int i=0; i<num_files; i++){
         
         	int order = list->order;
@@ -51,9 +52,9 @@ rmes_model::rmes_model(owef_args *input_list,data *structure)
         	}
         	ofiles[i] << endl;
 
-        	//double expect;
-                //double var;
-                //double ratio;
+        	double expect;
+                double var;
+                double ratio;
                 stringstream stream_2;
                 ofstream ratio_file;
                 string file_name;
@@ -61,16 +62,32 @@ rmes_model::rmes_model(owef_args *input_list,data *structure)
                 stream_2 >> file_name;
                 ratio_file.open(file_name.c_str());
                 ratio_file << "Word,Word_Count,Expect,Variance,Ratio"<<endl;
+        	//cout<<"list num:"<<list->num_words[i+list->minlength-1]<<endl;
+        	clock_t start,end;
+        	double duration;
+        	
         	for(int j=0; j<list->num_words[i+list->minlength-1]; j++){
         		
         		//scores *word = new scores;
                         //get the next word from the data structure
-                        next_word = structure->get_next_word(i+list->minlength);
                         
-                        //expect = condAsExpect(next_word,order,structure);
-                        //var=condAsVar(next_word,order,structure);
-                        //ratio = compute_ratio(expect, var, structure->get_count(next_word));
-                        //ratio_file<<next_word<<","<<structure->get_count(next_word)<<","<<expect<<","<<var<<","<<ratio<<endl;
+                        next_word = structure->get_next_word(i+list->minlength);
+                        //cout<<"next word"<<next_word<<endl;
+                        start=clock();
+                        expect = condAsExpect(next_word,order,structure);
+                        end=clock();
+                        duration = (double)(end-start)/CLOCKS_PER_SEC;
+                        d1=d1+duration;
+                      
+                        
+                        start=clock();
+                        var=condAsVar(next_word,order,structure);
+                        end=clock();
+                        duration = (double)(end-start)/CLOCKS_PER_SEC;
+                        d2=d2+duration;
+                        
+                        ratio = compute_ratio(expect, var, structure->get_count(next_word));
+                        ratio_file<<next_word<<","<<structure->get_count(next_word)<<","<<expect<<","<<var<<","<<ratio<<endl;
                         //cout<<"after ratio call Word:"<<next_word<<" Expect:"<< expect<<" Var:"<<var<<" Word_count:"<< structure->get_count(next_word)<<" Ratio:"<<ratio<<endl;
                         //compute the scores for that word
                         //compute_scores(word, next_word, structure, order);
@@ -78,7 +95,7 @@ rmes_model::rmes_model(owef_args *input_list,data *structure)
                 }
                 ratio_file.close();
         }
-
+        //printf("d1:%f d2:%f\n",d1,d2);
 }
 
 
@@ -383,6 +400,7 @@ vector<pair<string, scores> > rmes_model::get_seeds()
 {
 throw(-1);
 }
+
 
 
 
