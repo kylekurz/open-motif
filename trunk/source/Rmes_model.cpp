@@ -143,95 +143,108 @@ double rmes_model::condAsExpect(const Word &w, const short m, data *structure)
 //*compute condAsVar with data*structure instead of Counter
 double rmes_model::condAsVar(const Word &w, const short m, data *structure)
 {
+//	cout << "Word " << w << endl;
 	double var = 0.0;
- 	//long baseIndex = 0;
-    	//long wordIndex = 0;
-    	double q1 = 0.0;
-    	Counter subWordCounter(m + 1, m + 1);
+	double SeqCount = 0.0;
+	double WordCount = 0.0;
+	
+    	//Counter subWordCounter(m + 1, m + 1);
     	std::stringstream stream_1;
     	string word_1;
     	stream_1.clear();
     	stream_1 << w;
     	stream_1 >> word_1;
-    	cout << "word 1 = " << word_1 << endl;
+
     	double expect = condAsExpect(w, m, structure);
-    	if (expect != 0.0) {
-    		//Counter subWordCounter(m + 1, m + 1);
-        	//subWordCounter.countWords(w);
-        	//double my_q1 = 0.0;
-        	string sw = structure->get_next_extension(word_1.substr(0,m), m+1);
-        	//cout << "sw " << sw << endl;
-    		while(sw.compare("") != 0)
-    		{
-	    		cout << "sw " << sw << endl;
-	    		q1 += structure->get_count(sw);
-	    		sw = structure->get_next_extension(word_1.substr(0,m), m+1);
-    		}
-		if (q1 > 0.0) {
-        		double q2 = 0;
-        		vector<string> known_words;
-        		for(int i=0; i<static_cast<int>(word_1.length()-(m+1)); i++)
-        		{
-        			string sub = word_1.substr(i, m+1);
-        			cout << sub << endl;
-        			if(find(known_words.begin(), known_words.end(), sub) == known_words.end())
- 		       		{
- 		       			//cout << "new word " << endl;
- 		       			known_words.push_back(sub);
-        				int found=1;
-        				found = word_1.find(sub);
-        				//cout << "outer found " << found << endl;
-        				while(found != -1)
-        				{
-        					q2++;
-        					found = word_1.find(sub, found+1);
-        					//cout << "inner found " << found << endl;
-        				}
-        			}
-        		}
-                	var += (q2 * q2) / q1;
-                	//cout << "q1 " << q1 << endl << "q2 = " << q2 << endl << "var = " << var << endl;
-                	/*std::stringstream stream_2;
-                	std::string word_2;
-                	std::stringstream stream_3;
-                	std::string word_3;
-                	for (long baseIndex = 0; baseIndex < Alphabet::alphabet->size(); baseIndex++) {
-                    		long neighborIndex = Alphabet::alphabet->factor() * wordIndex + baseIndex;
-                    		stream_2.clear();
-                    		stream_2 << Word(m + 1, neighborIndex);
-                    		stream_2 >> word_2;
-                    		if (structure->get_count(word_2) > 0) {
-                        		stream_3.clear();
-                        		stream_3 << Word(m + 1, neighborIndex);
-                        		stream_3 >> word_3;
-                        		var -= double(subWordCounter.wordCount(m + 1, neighborIndex) * subWordCounter.wordCount(m + 1, neighborIndex)) / double(structure->get_count(word_3));
-                    		}
-                	}*/
+    	if (expect != 0.0) 
+    	{
+       		vector<string> known_words;
+       		vector<string> known_subwords;
+       		bool flag = 0;
+       		for(int i=0; i<static_cast<int>(word_1.length()-m); i++)
+       		{
+       			string sub = word_1.substr(i, m+1);
+			
+			if(find(known_words.begin(), known_words.end(), sub) == known_words.end())
+	       		{ 	       		
+ 	       			known_words.push_back(sub);
+		       		string sw = sub.substr(0,m);  				
+		       	      			       	     
+		       		if(find(known_subwords.begin(), known_subwords.end(), sw) == known_subwords.end())
+		       		{
+		       			double q1 = 0;
+		       			double q2 = 0;
+		       			double neighbor = 0; //for the neighbor index
+
+ 		       			known_subwords.push_back(sw);
+					
+			     		//cout << "Subword " << sw << " Count " << structure->get_count(sw) << endl;
+			       		//cout << "\t" << sw << endl;    			
+		
+					vector<string> v;
+					v.push_back("a");
+					v.push_back("c");
+					v.push_back("g");
+					v.push_back("t");
+		
+					for(int j=0; j<4;j++)
+					{
+						string temp = sw;
+						int count = structure->get_count(temp.append(v[j]));				
+						q1 += count;
+						
+						if(flag == 0)
+						{
+//							cout << temp << count << endl;
+							SeqCount += count;
+						}
+						
+						if(count > 0)
+						{									     			
+				     	  		double internal_q2 = 0;
+						
+							for(int p=0; p<static_cast<int>(word_1.length()-m); p++)
+					       		{
+					     	  		string psub = word_1.substr(p, m+1);
+					     	  		//cout << psub << " " << temp << endl;
+
+								if(psub.compare(temp) == 0)
+								{
+									q2++;
+									internal_q2++;
+								}
+					       		}
+					       		
+  							neighbor += internal_q2 * internal_q2 / count;
+					       	}
+					}
+					if(flag == 0)			
+					{
+						WordCount = q2;
+					}
+					flag =1;
+					var += (q2 * q2) / q1;
+					var -= neighbor;
+				}
+			}           
             	}
         }
-	    
-        /*long firstIndex = w.substring(0, m - 1);
-        long seqCounts = 0;
-        long wordCounts = 0;
-        std::stringstream stream_4;
-        std::string word_4;
-        
-        for (int baseIndex = 0; baseIndex < Alphabet::alphabet->size(); baseIndex++) {
-            stream_4.clear();
-            stream_4 << Word(m + 1, Alphabet::alphabet->factor() * firstIndex + baseIndex);
-            stream_4 >> word_4;
-            seqCounts += structure->get_count(word_4);
-            wordCounts += subWordCounter.wordCount(m + 1, Alphabet::alphabet->factor() * firstIndex + baseIndex);
-        }
-        var += (1.0 - 2.0 * double(wordCounts)) / double (seqCounts);
+
+//	cout << SeqCount << " " << WordCount << endl;
+
+        var += (1.0 - 2.0 * double(WordCount)) / double (SeqCount);
         var *= expect * expect;
         var += expect;
+
 
         for (long d = 1; d < w.length() - m; d++) {
             auto_ptr<Word> overlapWord(w.overlaps(d));
             if (overlapWord.get())
                 var += 2.0 * condAsExpect(*overlapWord.get(), m, structure);
-        }*/
+        }
+        
+//	cout << w << "\t" << var << "\t" << endl;
+
     	return var;
 
 }
