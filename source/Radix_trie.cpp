@@ -43,7 +43,7 @@ radix_trie::~radix_trie()
 #ifdef KKURZ_MPI
 void* listener(void *_Object) 
 {
-	flag=0;
+	int flag=0;
 	args *p = (args *)_Object;
 	int length = p->my_list->maxlength+1;
 	int done = 1;
