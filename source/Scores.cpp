@@ -27,7 +27,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-#include "../include/Scores.h"
+#include "Scores.h"
 
 using namespace std;
 

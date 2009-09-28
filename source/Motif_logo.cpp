@@ -1,4 +1,4 @@
-#include "../include/Motif_logo.h"
+#include "Motif_logo.h"
 
 using namespace std;
 

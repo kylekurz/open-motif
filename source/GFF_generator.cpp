@@ -1,4 +1,4 @@
-#include "../include/GFF_generator.h"
+#include "GFF_generator.h"
 
 using namespace std;
 

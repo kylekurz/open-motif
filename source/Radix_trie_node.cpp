@@ -9,7 +9,7 @@
 //		for use with the WordSeeker pipeline.
 //*****************************************************
 
-#include "../include/Radix_trie_node.h"
+#include "Radix_trie_node.h"
 
 using namespace std;
 
