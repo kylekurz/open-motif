@@ -23,9 +23,9 @@
 #include <iostream>
 using namespace std;
 
-#include "Counter.h"
-#include "Alphabet.h"
-#include "Word.h"
+#include "../include/Counter.h"
+#include "../include/Alphabet.h"
+#include "../include/Word.h"
 namespace rmes {
 
   Counter::Counter()

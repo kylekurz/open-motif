@@ -19,7 +19,7 @@
 **/
 
 //#include <Alphabet.h>
-#include "Alphabet.h"
+#include "../include/Alphabet.h"
 #include <algorithm>
 #include <cmath>
 #include <iostream>
