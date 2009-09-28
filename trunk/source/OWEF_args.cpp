@@ -28,7 +28,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-#include "../include/OWEF_args.h"
+#include "OWEF_args.h"
 
 using namespace std;
 

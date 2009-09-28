@@ -1,4 +1,4 @@
-#include "../include/Motif_scoring.h"
+#include "Motif_scoring.h"
 
 motif_scoring::motif_scoring()
 {

@@ -29,7 +29,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 */
  
-#include "../include/Word_scoring.h"
+#include "Word_scoring.h"
 
 word_scoring::word_scoring()
 {

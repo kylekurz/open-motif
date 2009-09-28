@@ -21,7 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 
-#include "../include/Rmes_model.h"
+#include "Rmes_model.h"
 
 #include <iostream>
 

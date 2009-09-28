@@ -19,7 +19,7 @@
 **/
 
 //#include <RMESString.h>
-#include "../include/RMESString.h"
+#include "RMESString.h"
 namespace rmes {
   String::~String() 
   {

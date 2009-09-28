@@ -29,7 +29,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-#include "../include/OWEF.h"
+#include "OWEF.h"
 
 #define NUM_THREADS 4
 
