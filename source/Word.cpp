@@ -28,8 +28,8 @@ using namespace std;
 
 //#include <Alphabet.h>
 //#include <Word.h>
-#include "Alphabet.h"
-#include "Word.h"
+#include "../include/Alphabet.h"
+#include "../include/Word.h"
 
 namespace rmes {
 

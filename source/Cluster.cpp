@@ -32,7 +32,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 
-#include "Cluster.h"
+#include "../include/Cluster.h"
 
 //standard constructor
 cluster::cluster()

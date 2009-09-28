@@ -32,7 +32,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 
-#include "Data_structure.h"
+#include "../include/Data_structure.h"
 
 //standard constructor
 data::data()

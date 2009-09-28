@@ -36,7 +36,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include <vector>
 
-#include "OWEF.h"
+#include "../include/OWEF.h"
 
 using namespace std;
 
