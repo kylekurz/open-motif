@@ -40,7 +40,7 @@ word_family::~word_family()
 	//no op
 }
 
-word_family::word_family(owef_args *input_list,data *structure, rmes_model *model)
+word_family::word_family(owef_args *input_list,data *structure, word_scoring *model)
 {
 	cout<<"Creating Word Families"<<endl;
 	list=input_list;
@@ -70,7 +70,7 @@ word_family::word_family(owef_args *input_list,data *structure, rmes_model *mode
 }
 
 
-string word_family::create_family(string w,data *structure, rmes_model *model, int order) 
+string word_family::create_family(string w,data *structure, word_scoring *model, int order) 
 {
 	if(w.length() > 2)
 	{
@@ -81,7 +81,9 @@ string word_family::create_family(string w,data *structure, rmes_model *model, i
 		cout << "size " << temp.size() << endl;
 		for(int p=0; p < static_cast<int>(temp.size()); p++)
 		{
-			cout << "Exploded Word: " << temp[p] << " Expected: " << model->condAsExpect(temp[p], order, structure) << endl;
+			scores *t = NULL;
+			model->compute_scores(t, temp[p], structure, order);
+			cout << "Exploded Word: " << temp[p] << " Expected: " << t->expect << " Variance: " << t->variance << endl;
 		}
   } 	
 	return "AAA";

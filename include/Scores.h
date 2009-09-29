@@ -52,6 +52,10 @@ class scores
 		scores();
 		//standard destructor
 		~scores();
+		//expected value
+		double expect;
+		//variance
+		double variance;	
 };
 
 #endif

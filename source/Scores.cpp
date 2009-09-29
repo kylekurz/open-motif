@@ -35,7 +35,8 @@ using namespace std;
 scores::scores()
 {
 	//set all variables to zero in here
-	
+	expect = 0;
+	variance = 0;
 }
 
 
