@@ -35,8 +35,6 @@ SRCDIR := source
 OBJDIR := $(if $(filter yes,$(DEBUG)),debug,release)
 
 
-Alphabet.o: Alphabet.cpp Alphabet.h
-	$(CC) -c  $^
 
 INCLUDE_DIRECTORIES = include
 CPPFLAGS += $(addprefix -I ,$(INCLUDE_DIRECTORIES))
