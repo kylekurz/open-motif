@@ -66,14 +66,20 @@ string word_family::create_family(string w,data *structure)
 {
 	if(w.length() > 2)
 	{
-    	cout << "Word " << w << " -> ANA" << endl;
-    	w = "ANA";
-    	vector<string> temp = structure->get_regex_matches(w);
-    	cout << "size " << temp.size() << endl;
-    	for(int p=0; p < static_cast<int>(temp.size()); p++)
-    	{
-    		cout << "Exploded Word: " << temp[p] << endl;
-    	}
+		cout << "Word " << w << endl;
+		//w = "ANA";
+		for (int i=1; i<static_cast<int> (w.length()-1); i++) 
+		{
+			char x = w[i];
+			w[i] = 'N';
+			vector<string> temp = structure->get_regex_matches(w);
+			cout << "size " << temp.size() << endl;
+			for(int p=0; p < static_cast<int>(temp.size()); p++)
+			{
+				cout << "Exploded Word: " << temp[p] << endl;
+			}
+			w[i] = x;
+		}
   } 	
 	return "AAA";
 }
