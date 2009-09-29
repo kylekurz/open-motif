@@ -8,8 +8,15 @@
 // Purpose:	Define a radix trie node structure
 //		for use with the WordSeeker pipeline.
 //*****************************************************
+/*
+Copyright (C) 2009  Jens Lichtenberg, Kyle Kurz, Lonnie Welch, Frank Drews, Sophie Schbath, Mark
+Hoebeke, Finn Drablos, Geir Kjetil Sandve, Lee Nau, Xiaoyu Liang, Rami Alouran, Matthew Wiley
+*/
 
-#include "Radix_trie_node.h"
+
+
+#include "../include/Radix_trie_node.h"
+
 
 using namespace std;
 
