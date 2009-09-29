@@ -59,7 +59,7 @@ class owef_args
 		owef_args();
 		
 		//initialized constructor
-		owef_args(bool count, string seq_file, int word_length, int min_length, int min_seqs, int min_O, bool ancestral_filter, bool N_filter, bool missing, bool enumerate, bool record_seqs, bool score, int order, bool revcomp, bool pval, bool pthr, double pthresh, bool cluster, int seeds, char sort, char type, int distance, bool motif_score, bool pwm, bool logos, bool regex, bool word_distribution, int dist_count, bool normalize, bool cooccur, bool map, string mout, bool dist, string dout, int group_size, bool self, bool upper_lower, bool sequence_clustering, bool discover, bool fixed, int dimensions, bool self_compare, bool distributed, bool preserve_order, bool density, bool overlap_words, string prefix, bool parallel, string log_file);
+		owef_args(bool count, string seq_file, int word_length, int min_length, int min_seqs, int min_O, bool ancestral_filter, bool N_filter, bool missing, bool enumerate, bool record_seqs, bool score, int order, bool revcomp, bool pval, bool pthr, double pthresh, string prefix, bool parallel, string log_file);
 		
 		void write_logs();
 		
@@ -109,48 +109,6 @@ class owef_args
 		bool pthr;
 		//threshold value
 		double pthresh;
-		//do clustering?
-		bool cluster;
-		//how many?
-		int seeds;
-		//what column?
-		char sort;
-		//what type?
-		char type;
-		//how big a distance?
-		int distance;
-		//score the motifs?
-		bool motif_score;
-		//create cluster pwm's?
-		bool pwm;
-		//create cluster logos?
-		bool logos;
-		//create cluster regex's?
-		bool regex;
-		//do word distributions?
-		bool word_distribution;
-		//how many words?
-		int dist_count;
-		//normalize?
-		bool normalize;
-		//do cooccurrence?
-		bool cooccur;
-		//create map?
-		bool map;
-		//name for map;
-		string mout;
-		//create dist map?
-		bool dist;
-		//name for dist;
-		string dout;
-		//number of words to analyze together
-		int group_size;
-		//compare words with themselves?
-		bool self;
-		//case sensitive
-		bool upper_lower;
-		//do sequence clustering?
-		bool sequence_clustering;
 		//prefix for unique job id's
 		string prefix;
 		//run the job with parallel code?

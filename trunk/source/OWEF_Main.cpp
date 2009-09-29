@@ -66,50 +66,6 @@ int main(int argc, char *argv[])
 	bool pthr = 0;
 	double pthresh = 0.05;
 	
-	//clustering stage variables
-	bool cluster = 0;
-	int seeds = 25;
-	string sort;
-	string type;
-	int distance = 1;
-	bool motif_score = 0;
-	bool pwm = 0;
-	bool logos = 0;
-	bool regex = 0;
-	
-	//cooccurrence stage variables
-	bool cooccur = 0;
-	bool map = 0;
-	string mout;
-	bool cdist = 0;
-	string dout;
-	int group_size=2;
-	bool self = 0;
-	bool upper_lower = 0;
-	
-	//word distribution stage variables
-	bool word_distribution = 0;
-	int dist_count = 5;
-	bool normalize = 0;
-	
-	//scatter plot variables
-	bool scatter = 0;
-	
-	//sequence clustering variables
-	bool sequence_clustering = 0;
-		
-	//conservation anaylsis variables
-	
-	//module discovery variables
-	bool discovery = 0;
-	bool fixed = 0;
-	int dimensions = 0;
-	bool self_compare = 0;
-	bool distributed = 0;
-	bool preserve_order = 0;
-	bool density = 0;
-	bool overlap_words = 0;
-	
 	//job variables
 	string directory = "";
 	string prefix = "";
@@ -166,86 +122,6 @@ int main(int argc, char *argv[])
 				}
 			}
 		}
-		/*
-		cout << "Perform clustering? (enter 0 for no, 1 for yes): ";
-		cin >> cluster;
-		if(cluster)
-		{
-			cout << "How many clusters? ";
-			cin >> seeds;
-			cout << "What score to sort by? (r = O/E, o = O*ln(O/E), s = S*ln(S/Es)) ";
-			cin >> sort;
-			cout << "What clustering method? (h = hamming, e = edit) ";
-			cin >> type;
-			cout << "What distance? ";
-			cin >> distance;
-			cout << "Score the motifs (clusters)? (enter 0 for no, 1 for yes): ";
-			cin >> motif_score;
-			cout << "Create Position Weight Matrices for clusters? (enter 0 for no, 1 for yes): ";
-			cin >> pwm;
-			cout << "Create logos for the motifs? (enter 0 for no, 1 for yes): ";
-			cin >> logos;
-			cout << "Create regular expressions for the motifs? (enter 0 for no, 1 for yes): ";
-			cin >> regex;
-		}
-		cout << "Create scatter plots of scores? (enter 0 for no, 1 for yes): ";
-		cin >> scatter;
-		cout << "Perform word distribution analysis? (enter 0 for no, 1 for yes): ";
-		cin >> word_distribution;
-		if(word_distribution)
-		{	
-			cout << "Number of words to analyze: ";
-			cin >> dist_count;
-			cout << "Normalize distributions? (enter 0 for no, 1 for yes): ";
-			cin >> normalize;
-		}
-		cout << "Perform cooccurrence analysis? (enter 0 for no, 1 for yes): ";
-		cin >> cooccur;
-		if(cooccur)
-		{
-			cout << "Map the coocurrence? (enter 0 for no, 1 for yes): ";
-			cin >> map;
-			if(map)
-			{
-				cout << "Filename for map: ";
-				cin >> mout;
-			}
-			cout << "Map the distances? (enter 0 for no, 1 for yes): ";
-			cin >> cdist;
-			if(cdist)
-			{
-				cout << "Filename for distances: ";
-				cin >> dout;
-			}
-			cout << "Number of words in a group: ";
-			cin >> group_size;
-			cout << "Compare each word to itself? (enter 0 for no, 1 for yes): ";
-			cin >> self;
-			cout << "Use case sensitive analysis? (enter 0 for no, 1 for yes): ";
-			cin >> upper_lower;
-		}
-		cout << "Perform sequence clustering? (enter 0 for no, 1 for yes): ";
-		cin >> sequence_clustering;
-		cout << "Perfrom module discovery? (enter 0 for no, 1 for yes): ";
-		cin >> discovery;
-		if(discovery)
-		{
-			cout << "Fixed wordlength? (enter 0 for no, 1 for yes): ";
-			cin >> fixed;
-			cout << "How many words per module? ";
-			cin >> dimensions;
-			cout << "Use same word multiple times in a module? (enter 0 for no, 1 for yes): ";
-			cin >> self_compare;
-			cout << "Generate distance distribution? (enter 0 for no, 1 for yes): ";
-			cin >> distributed;
-			cout << "Preserve order of words in module? (enter 0 for no, 1 for yes): ";
-			cin >> preserve_order;
-			cout << "Generate density distribution? (enter 0 for no, 1 for yes): ";
-			cin >> density;
-			cout << "Consider overlapping words? (enter 0 for no, 1 for yes): ";
-			cin >> overlap_words;
-		}
-		 */
 	}
 	//otherwise read the options and set flags
 	else
@@ -267,34 +143,6 @@ int main(int argc, char *argv[])
 		flags.push_back("-r");
 		flags.push_back("-p");
 		flags.push_back("-pt");
-		flags.push_back("--cluster");
-		flags.push_back("-s");
-		flags.push_back("-c");
-		flags.push_back("-t");
-		flags.push_back("-d");
-		flags.push_back("-sm");
-		flags.push_back("-pwm");
-		flags.push_back("-logos");
-		flags.push_back("-regex");
-		flags.push_back("--scatter");
-		flags.push_back("--distribution");
-		flags.push_back("-dc");
-		flags.push_back("-dn");
-		flags.push_back("--cooccurrence");
-		flags.push_back("-cm");
-		flags.push_back("-cd");
-		flags.push_back("-cn");
-		flags.push_back("-cc");
-		flags.push_back("-cs");
-		flags.push_back("--sequence");
-		flags.push_back("--modules");
-		flags.push_back("-mef");
-		flags.push_back("-med");
-		flags.push_back("-mes");
-		flags.push_back("-medd");
-		flags.push_back("-mepo");
-		flags.push_back("-mede");
-		flags.push_back("-meow");
 		flags.push_back("--prefix");
 		flags.push_back("--parallel");
 		flags.push_back("-h");
@@ -360,98 +208,12 @@ int main(int argc, char *argv[])
 					pthresh = atof(argv[++i]);
 					break;
 				case 16:
-					cluster = true;
-					break;
-				case 17:
-					seeds = atoi(argv[++i]);
-					break;
-				case 18:
-					sort = argv[++i];
-					break;
-				case 19:
-					type = argv[++i];
-					break;
-				case 20:
-					distance = atoi(argv[++i]);
-					break;
-				case 21:
-					motif_score = true;
-					break;
-				case 22:
-					pwm = true;
-					break;
-				case 23:
-					logos = true;
-					break;
-				case 24:
-					regex = true;
-					break;
-				case 25:
-					scatter = true;
-					break;
-				case 26:
-					word_distribution = true;
-					break;
-				case 27:
-					dist_count = atoi(argv[++i]);
-					break;
-				case 28:
-					normalize = true;
-					break;
-				case 29:
-					cooccur = true;
-					break;
-				case 30:
-					map = true;
-					mout = argv[++i];
-					break;
-				case 31:
-					cdist = true;
-					dout = argv[++i];
-					break;
-				case 32:
-					group_size = atoi(argv[++i]);
-					break;
-				case 33:
-					self = true;
-					break;
-				case 34:
-					upper_lower = true;
-					break;
-				case 35:
-					sequence_clustering = true;
-					break;
-				case 36:
-					discovery = true;
-					break;
-				case 37:
-					fixed = true;
-					break;
-				case 38:
-					dimensions = atoi(argv[++i]);
-					break;
-				case 39:
-					self_compare = true;
-					break;
-				case 40:
-					distributed = true;
-					break;
-				case 41:
-					preserve_order = true;
-					break;
-				case 42:
-					density = true;
-					break;
-				case 43:
-					overlap_words = true;
-					break;
-				case 44:
 					prefix = argv[++i];
 					break;
-				case 45:
+				case 17:
 					parallel = true;
 					break;
-				case 46:
+				case 18:
 					cout << endl << "Command options format: \n./OWEFexec [--count -i sequence_file -l word_length -ml minimum_length -ms minimum_sequences -mo minimum_occurrences <-a> <-n> <-m> <-e> <-rs>] [--score -o markov_order <-r> <-p>] [--cluster -s #_of_clusters -c sort_column -t cluster_type -d distance -sm] [--scatter] [--distribution <-dc number> <-dn>] [--cooccurrence <-cm map_name> <-cd dist_name> <-cn number> <-cc> <-cs>] [--prefix JobID]" << endl;
 					cout << endl << "Counting stage options:" << endl;
 					cout << endl << "  Required:" << endl;
@@ -475,47 +237,6 @@ int main(int argc, char *argv[])
 					cout << "	-r (-r adds reverse compliment analysis to the stage)" << endl;
 					cout << "	-p (-p adds p-value analyisis to the stage)" << endl;
 					cout << "	-pt threshold (-pt limits output from scoring to p-values below a certain cutoff, threshold is a double)" << endl;
-					cout << endl << "Clustering stage options:" << endl;
-					cout << endl << "  Required:" << endl;
-					cout << "    --cluster : perform the clustering stage" << endl;
-					cout << "	-s #_of_clusters (-s indicates seeds, #_of_clusters is an integer)" << endl;
-					cout << "	-c sort_column (-c indicates column to sort by, sort_column is a character, r = O/E score, s = S*ln(S/Es), o = O*ln(O/Eo))" << endl;
-					cout << "	-t cluster_type (-t indicates cluster distance method, cluster_type is a character, e = edit distance, h = hamming distance)" << endl;
-					cout << "	-d distance (-d indicates maximum distance between two words in a cluster, distance is an integer)" << endl;
-					cout << "	-sm (-sm add motif scoring and logo creation to the stage)" << endl;
-					cout << "	-pwm (create Position Weight Matrices for the motifs)" << endl;
-					cout << "	-logos (create logos for the motifs)" << endl;
-					cout << "	-regex (create regular expressions for the motifs)" << endl;
-					cout << endl << "Scatter plot options:" << endl;
-					cout << endl << "  Required:" << endl;
-					cout << "    --scatter" << endl;
-					cout << endl << "Word distribution options:" << endl;
-					cout << endl << "  Required:" << endl;
-					cout << "    --distribution" << endl;
-					cout << endl << "  Optional:" << endl;
-					cout << "	-dc number (-dc indicates the number of top words used for computing distributions, number is an integer)" << endl;
-					cout << "	-dn (-dc normalizes the word distributions to a percentage through the sequences)" << endl;
-					cout << endl << "CoOccurrence options:" << endl;
-					cout << endl << "  Required:" << endl;
-					cout << "    --cooccurrence" << endl;
-					cout << endl << "  Optional:" << endl;
-					cout << "	-cm map_name (-cm maps the cooccurrence to a plot, map_name is a string for the filename)" << endl;
-					cout << "	-cd dist_name (-cd creates a file with the distances between groups, dist_name is a string for the filename)" << endl;
-					cout << "	-cn number (-cn is the number of words in a group, number is an integer)" << endl;
-					cout << "	-cc (-cc indicates using a word twice in a group (cooccurrence with itself))" << endl;
-					cout << "	-cs (-cs indicates case sensitivity for distinct words)" << endl;
-					cout << endl << "Sequence clustering options:" << endl;
-					cout << endl << "  Required:" << endl;
-					cout << "    --sequence" << endl;
-					cout << endl << "Module discovery options:" << endl;
-					cout << "    --modules" << endl;
-					cout << "	-mef (-mef uses fixed wordlength, if absent, the wordlength is variable)" << endl;
-					cout << "	-med dimensions (-med uses dimensions to set the size of the modules created)" << endl;
-					cout << "	-mes (-mes allows the module to include the same word multiple times)" << endl;
-					cout << "	-medd (-medd creates a distance distribution file)" << endl;
-					cout << "	-mepo (-mepo preserves the order of the words in the module when searching)" << endl;
-					cout << "	-mede (-mede creates a density distribution file)" << endl;
-					cout << "	-meow (-meow allows words in a module to overlap in position)" << endl;
 					cout << endl << "General job options:" << endl;
 					cout << endl << "  Optional:" << endl;
 					cout << "    --prefix JobID (--prefix places a prefix in front of every file created during the job, JobID is a string)" << endl << endl;
@@ -523,7 +244,7 @@ int main(int argc, char *argv[])
 					exit(0);
 					break;
 				default:
-					cout << "Command options format: \n./OWEFexec [--count -i sequence_file -l word_length -ml minimum_length -ms minimum_sequences -mo minimum_occurrences <-a> <-n> <-m> <-e> <-rs>] [--score -o markov_order <-r> <-p> <-pt threshold>] [--cluster <-s #_of_clusters> <-c sort_column> <-t cluster_type> <-d distance> <-sm> <-pwm> <-logos> <-regex>] [--scatter] [--cooccurrence <-cm map_name> <-cd dist_name> <-cn number> <-cc> <-cs>] [--sequence] [--modules <-mef> <-med dimensions> <-mes> <-medd> <-mepo> <-mede> <-meow>][--prefix JobID] [--parallel]" << endl;
+					cout << "Command options format: \n./OWEFexec [--count -i sequence_file -l word_length -ml minimum_length -ms minimum_sequences -mo minimum_occurrences <-a> <-n> <-m> <-e> <-rs>] [--score -o markov_order <-r> <-p> <-pt threshold>] [--prefix JobID] [--parallel]" << endl;
 					exit(-1);
 					break;
 			}
@@ -550,27 +271,7 @@ int main(int argc, char *argv[])
 	//they are implementing
 	//*******************************************************************
 	owef_args *from_input;
-	from_input = new owef_args(count, seq_file, word_length, min_length, min_seqs, min_O, ancestral_filter, N_filter, missing, enumerate, record_seqs, score, order, revcomp, pval, pthr, pthresh, cluster, seeds, sort[0], type[0], distance, motif_score, pwm, logos, regex, word_distribution, dist_count, normalize, cooccur, map, mout, cdist, dout, group_size, self, upper_lower, sequence_clustering, discovery, fixed, dimensions, self_compare, distributed, preserve_order, density, overlap_words, prefix, parallel, job_log);
-	
-	#ifdef KKURZ_MPI
-	
-	//*******************************************************************
-	//initialize the mpi code to create the proper communication 
-	//capabilities
-	//*******************************************************************
-	//cout << "setting up mpi" << endl;
-	int rc = MPI_Init(&argc, &argv);
-	if(rc != MPI_SUCCESS)
-	{
-		printf("Error starting MPI program. Terminating.\n");
-		MPI_Abort(MPI_COMM_WORLD, rc);
-	}
-	
-	MPI_Comm_size(MPI_COMM_WORLD, &(from_input->numtasks));
-	MPI_Comm_rank(MPI_COMM_WORLD, &(from_input->rank));
-	printf("Number of tasks= %d My rank= %d\n", from_input->numtasks, from_input->rank);
-
-	#endif
+	from_input = new owef_args(count, seq_file, word_length, min_length, min_seqs, min_O, ancestral_filter, N_filter, missing, enumerate, record_seqs, score, order, revcomp, pval, pthr, pthresh, prefix, parallel, job_log);
 	
 	from_input->write_logs();
 
@@ -581,41 +282,6 @@ int main(int argc, char *argv[])
 	string cmd;
 	stringstream stream;
 	int system_return = 0;
-	
-	//if we want scatter plots...
-	if(scatter)
-	{
-		ofstream log(from_input->log_file.c_str(), ios::app);
-		log << "Scatter Plot: " << from_input->prefix << "_" << from_input->maxlength << "_" << from_input->order << "_OlnOE.png" << endl;
-		log << "Scatter Plot: " << from_input->prefix << "_" << from_input->maxlength << "_" << from_input->order << "_SlnSE.png" << endl;
-		log.close();
-		//run the scatter plots
-		stream.clear();
-		stream << "./OlnOE_scatter_plot.sh " << from_input->prefix << "_" << from_input->maxlength << "_" << from_input->order << ".csv " << from_input->prefix << "_" << from_input->maxlength << "_" << from_input->order;
-		getline(stream, cmd);
-		system_return = system(cmd.c_str());
-	
-		if(from_input->missing && from_input->enumerate)
-		{
-			stream.clear();
-			stream << "./missing_scatter.sh " << from_input->prefix << "_" << from_input->maxlength << "_" << from_input->order << "_missing_scored.csv " << from_input->prefix << "_" << from_input->maxlength << "_" << from_input->order;
-			getline(stream, cmd);
-			system_return = system(cmd.c_str());
-		}
-
-		stream.clear();
-		stream << "./SlnSE_scatter_plot.sh " << from_input->prefix << "_" << from_input->maxlength << "_" << 	from_input->order << ".csv " << from_input->prefix << "_" << from_input->maxlength << "_" << from_input->order;
-		getline(stream, cmd);
-		system_return = system(cmd.c_str());
-		
-		if(pval)
-		{
-			stream.clear();
-			stream << "./pval_scatter.sh " << from_input->prefix << "_" << from_input->maxlength << "_" << from_input->order << ".csv " << from_input->prefix << "_" << from_input->maxlength << "_" << from_input->order;
-			getline(stream, cmd);
-			system_return = system(cmd.c_str());
-		}
-	}
 		
 	cout << "Creating results directory...\n\n";
 	//Create results directory:
@@ -625,8 +291,6 @@ int main(int argc, char *argv[])
 		stream << "_" << from_input->maxlength;
 	if(from_input->score)
 		stream << "_" << from_input->order;
-	if(from_input->cluster)
-		stream << "_" << from_input->type << "_" << from_input->seeds;
 	stream >> directory;
 
 	stream.clear();
@@ -645,18 +309,5 @@ int main(int argc, char *argv[])
 	cout << "Results stored in " << directory << "/\n";
 	cout << "\nRun successful!\n";
 	
-	#ifdef KKURZ_MPI
-	if(from_input->rank == 0)
-	{
-		for(int i=1; i<from_input->numtasks; i++)
-		{
-			char x = 'x';
-			int rc = 0;
-			rc = MPI_Send(&x, 1, MPI_CHAR, i, 0, MPI_COMM_WORLD);
-			//cout << "rc: " << rc << endl;
-		}
-		MPI_Finalize();
-	}
-	#endif
 	return EXIT_SUCCESS;
 }
