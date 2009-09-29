@@ -68,6 +68,15 @@ owef::owef(owef_args *from_input)
 	end = clock();
 	duration = (double)(end-start)/CLOCKS_PER_SEC;
 	printf("Scoring finished in: %f seconds\n", duration);
+	if(list->fam)
+	{
+		cout<<"Word Familying"<<endl;
+		family = new word_family(list, structure, model);
+		
+  	}
+	end = clock();
+	duration = (double)(end-start)/CLOCKS_PER_SEC;
+	printf("Familying finished in: %f seconds\n", duration);
 }
 		
 //standard destructor		

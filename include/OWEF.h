@@ -52,9 +52,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "Module_discovery.h"
 #include "OWEF_args.h"
 #include "Radix_trie.h"
-#include "Scores.h"
-#include "Word_scoring.h"
 #include "Rmes_model.h"
+#include "Scores.h"
+#include "Word_family.h"
+#include "Word_scoring.h"
+
+
+
 
 #ifndef KKURZ_OWEF
 #define KKURZ_OWEF
@@ -113,6 +117,7 @@ class owef
 		module_discovery *style;
 		owef_args *list;
 		word_scoring *model;
+		word_family *family;
 };
 
 #endif
