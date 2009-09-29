@@ -9,7 +9,10 @@
  // Purpose:	Define a motif logo class for
  //				OpenMotif framework
  **********************************************
- Copyright (C) 2009  Kyle Kurz, Lonnie Welch, Frank Drews, Lee Nau
+
+Copyright (C) 2009  Jens Lichtenberg, Kyle Kurz, Lonnie Welch, Frank Drews, Sophie Schbath, Mark
+Hoebeke, Finn Drablos, Geir Kjetil Sandve, Lee Nau, Xiaoyu Liang, Rami Alouran, Matthew Wiley
+
  
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
