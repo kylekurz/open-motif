@@ -342,8 +342,8 @@ double rmes_model::condAsVar(const Word &w, const short m, const Counter &cc)
 //function to compute all scores of a word
 void rmes_model::compute_scores(scores *word, string &motif, data *structure, int &order)
 {
-   throw(-1);
-   
+	word->expect = condAsExpect(motif,order,structure);
+	word->variance = condAsVar(motif,order,structure);
 }
 
 //*rmes
