@@ -101,7 +101,8 @@ class data
 		virtual string get_next_extension(string seed, int length)=0;
 		//function to output information
 		virtual void output()=0;
-		
+		//function to reset last_word variables
+		virtual void reset()=0;
 	protected:
 		//pointer to the list of input parameters
 		owef_args *list;
