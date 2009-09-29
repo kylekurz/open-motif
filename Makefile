@@ -52,6 +52,8 @@ install: $(OBJS)
 ifeq ($(OBJDIR),debug)
 all: CPPFLAGS = -Wall -g -pg
 all: CPPFLAGS += $(addprefix -I ,$(INCLUDE_DIRECTORIES))
+install: CPPFLAGS = -Wall -g -pg
+install: CPPFLAGS += $(addprefix -I ,$(INCLUDE_DIRECTORIES))
 endif
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.cpp

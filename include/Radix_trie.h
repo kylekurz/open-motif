@@ -66,6 +66,8 @@ class radix_trie : public data
 		string get_next_extension(string seed, int length);
 		//function to output information
 		void output();
+		//function to reset last_word variables
+		void reset();
 		
 		//************************************************************
 		//Modifiers

@@ -555,6 +555,17 @@ void radix_trie::output()
 		//output(ofiles[i], root, "", i+list->minlength);
 	}
 }
+
+void radix_trie::reset()
+{
+	for (int i=0; i<static_cast<int> (last_word.size()); i++) {
+		last_word[i] = "";
+	}
+	for (int j=0; j<static_cast<int> (last_loc.size()); j++) {
+		last_loc[j] = NULL;
+	}
+}
+
 //#ifdef KKURZ_MPI
 //systematically returns EVERY word stored in the trie at a given length.  It is the caller's responsibility
 //to verify that the word meets any requirements of the job (i.e. min_O and min_seqs before output)

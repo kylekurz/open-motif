@@ -119,6 +119,7 @@ rmes_model::rmes_model(owef_args *input_list,data *structure)
                 ratio_file.close();
         }
         printf("condAsExpect(s) took:%f condAsVar(s):%f\n",d1,d2);
+	structure->reset();
 }
 
 
