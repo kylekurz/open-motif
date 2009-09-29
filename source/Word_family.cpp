@@ -56,15 +56,25 @@ word_family::word_family(owef_args *input_list,data *structure, word_scoring *mo
 			cout << i+list->minlength << endl;
 	    string next_word = structure->get_next_word(i+list->minlength);
 	    cout<<"next word"<<next_word<<endl;
+	    create_family(next_word,structure);
   	}
   }
 }
 
 
-string word_family::create_family(string w) 
+string word_family::create_family(string w,data *structure) 
 {
-    	cout << "Word " << w << endl;
-    	
+	if(w.length() > 2)
+	{
+    	cout << "Word " << w << " -> ANA" << endl;
+    	w = "ANA";
+    	vector<string> temp = structure->get_regex_matches(w);
+    	cout << "size " << temp.size() << endl;
+    	for(int p=0; p < static_cast<int>(temp.size()); p++)
+    	{
+    		cout << "Exploded Word: " << temp[p] << endl;
+    	}
+  } 	
 	return "AAA";
 }
 

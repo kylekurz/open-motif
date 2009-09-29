@@ -306,6 +306,7 @@ int radix_trie::get_seqs(string motif)
 
 vector<string> radix_trie::get_regex_matches(string regex)
 {
+	regex = convert(regex);
 	vector<string> t1, ret_vector;
 	t1.push_back(regex);
 	while (!t1.empty()) 
@@ -318,14 +319,17 @@ vector<string> radix_trie::get_regex_matches(string regex)
 			for(int k=0; k<4; k++)
 			{
 				temp[found] = 'A'+k;
+				//cout << "TEMP " << temp << endl;
 				t1.push_back(temp);
 			}
 		}
 		else 
 		{
-			if(get_count(temp) != 0)
+			//cout << "Before TEMP " << temp << endl;
+			if(get_count(unconvert(temp)) != 0)
 			{
-				ret_vector.push_back(temp);
+				//cout << "Else TEMP " << temp << endl;
+				ret_vector.push_back(unconvert(temp));
 			}
 		}
 

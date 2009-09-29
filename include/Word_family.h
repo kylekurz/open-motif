@@ -57,7 +57,7 @@ class word_family
       ~word_family();
 
     //Make Family
-      string create_family(string w);
+      string create_family(string w,data *structure);
 
   protected:
     owef_args *list;      
