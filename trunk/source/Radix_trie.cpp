@@ -229,49 +229,7 @@ radix_trie::radix_trie(owef_args *from_input)
 //variable.  No modifications allowed. If data structure does
 //not store information, throw exception with (-1)
 //************************************************************
-/*
-//function to get E value
-double radix_trie::get_E(string motif)
-{
-	//radix trie must compute E value for the string
-	throw(-1);
-}
 
-//function to get E_s value
-double radix_trie::get_Es(string motif)
-{
-	//radix trie must compute Es value for the string
-	throw(-1);
-}
-
-//function to get O*ln(O/E) value
-double radix_trie::get_Oln(string motif)
-{
-	//radix trie must compute Oln value for the string
-	throw(-1);
-}
-
-//funtion to get S*ln(O/E) value
-double radix_trie::get_Sln(string motif)
-{
-	//radix trie must compute Sln value for the string
-	throw(-1);
-}
-
-//function to get p-value
-double radix_trie::get_pval(string motif)
-{
-	//radix trie must compute p value for the string
-	throw(-1);
-}
-
-//function to get rank
-int radix_trie::get_rank(string motif)
-{
-	//radix trie must compute rank value for the string
-	throw(-1);
-}
-*/
 #ifdef KKURZ_MPI
 //function to get word count
 int radix_trie::get_count(string motif)
@@ -345,6 +303,35 @@ int radix_trie::get_seqs(string motif)
 	return trie_find_s(root, t, l);
 }
 #endif
+
+vector<string> radix_trie::get_regex_matches(string regex)
+{
+	vector<string> t1, ret_vector;
+	t1.push_back(regex);
+	while (!t1.empty()) 
+	{
+		string temp = t1.back();
+		t1.pop_back();
+		int found = temp.find_first_of('E');
+		if(found != -1)
+		{
+			for(int k=0; k<4; k++)
+			{
+				temp[found] = 'A'+k;
+				t1.push_back(temp);
+			}
+		}
+		else 
+		{
+			if(get_count(temp) != 0)
+			{
+				ret_vector.push_back(temp);
+			}
+		}
+
+	}
+	return ret_vector;
+}
 
 //function to get the sequences from the input file
 vector<string> radix_trie::get_seq_file()

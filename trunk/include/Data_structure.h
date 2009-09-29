@@ -76,6 +76,10 @@ class data
 		virtual int get_count(string motif)=0;
 		//function to get sequence count
 		virtual int get_seqs(string motif)=0;
+		//function to return all words that match a regular expression
+		virtual vector<string> get_regex_matches(string regex)=0;
+		//function to get total count of a regex
+		//virtual pair<string, int> get_regex_counts(string motif)=0;
 		//function to get the sequences from the input file
 		virtual vector<string> get_seq_file()=0;
     
