@@ -37,7 +37,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "Data_structure.h"
 #include "OWEF_args.h"
 #include "Scores.h"
-#include "Word_scoring.h"
+#include "Rmes_model.h"
 
 
 
@@ -52,12 +52,12 @@ class word_family
     //constructor
       word_family();
     //initialized constructor
-      word_family(owef_args *input_list,data *structure, word_scoring *model);
+      word_family(owef_args *input_list,data *structure, rmes_model *model);
     //destructor
       ~word_family();
 
     //Make Family
-      string create_family(string w,data *structure);
+      string create_family(string w,data *structure, rmes_model *model, int order);
 
   protected:
     owef_args *list;      
