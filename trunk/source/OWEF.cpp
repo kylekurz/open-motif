@@ -32,17 +32,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "OWEF.h"
 
-#define NUM_THREADS 4
-
 using namespace std;
-
-extern "C" void *ThreadStartup2(void *);
-
-//structure for passing to parallel processor
-typedef struct args{
-	int thr_id;
-	owef *job;
-}args;
 
 //standard constructor
 owef::owef()
@@ -78,30 +68,6 @@ owef::owef(owef_args *from_input)
 	end = clock();
 	duration = (double)(end-start)/CLOCKS_PER_SEC;
 	printf("Scoring finished in: %f seconds\n", duration);
-	//are we doing module discovery?
-	//start = clock();
-	/*if(list->discover)
-	{
-		style = new module_enumeration(list, structure, model);
-	}
-	end = clock();
-	duration = (double)(end-start)/CLOCKS_PER_SEC;
-	printf("Module enumeration finished in: %f seconds\n", duration);
-	//do the rest in parallel
-	for(t_num=0; t_num<NUM_THREADS; t_num++)
-	{
-		//cout << "creating thread: " << t_num << endl;
-		//thread_seqs[t_num] = 0;
-		args *p = new args;
-		p->thr_id = t_num;
-		//p->thread = prefix[t_num];
-		//p->sequence = tag;
-		p->job = this;
-		pthread_create(&threads[t_num], NULL, ThreadStartup2, (void *)p);
-	}
-	for(t_num=0; t_num<4; t_num++)
-		pthread_join(threads[t_num], NULL);
-	 */
 }
 		
 //standard destructor		
@@ -109,7 +75,6 @@ owef::~owef()
 {
 	delete structure;
 	delete model;
-	//delete method;
 	delete style;
 }
 
@@ -141,68 +106,4 @@ string owef::get_next_word(int length)
 void owef::output()
 {
 	structure->output();
-}
-
-void *owef::process(void *foo)
-{
-	/*clock_t start, end;
-	double duration;
-	args *p = (args *)foo;
-	if(p->thr_id == 1)
-	{
-		//are we clustering?
-		start = clock();
-		if(list->cluster)
-		{
-			if(list->type == 'e')
-				method = new edit_cluster(list, structure, model);
-			if(list->type == 'h')
-				method = new hamming_cluster(list, structure, model);
-		}
-		end = clock();
-		duration = (double)(end-start)/CLOCKS_PER_SEC;
-		printf("Word Clustering finished in: %f seconds\n", duration);
-	}
-	else if(p->thr_id == 2)
-	{
-		//are we doing word distribution?
-		start = clock();
-		if(list->word_distribution)
-		{
-			type = new word_distribution(list, structure, model);
-		}
-		end = clock();
-		duration = (double)(end-start)/CLOCKS_PER_SEC;
-		printf("Word distribution finished in: %f seconds\n", duration);
-	}
-	else if(p->thr_id == 3)
-	{
-		//are we doing cooccurrence analysis?
-		start = clock();
-		if(list->cooccur)
-		{
-			analysis = new cooccurrence(list, structure, model);
-		}
-		end = clock();
-		duration = (double)(end-start)/CLOCKS_PER_SEC;
-		printf("Cooccurrence analysis finished in: %f seconds\n", duration);
-	}
-	else if(p->thr_id == 4)
-	{
-		start = clock();
-		if(list->sequence_clustering)
-		{
-			tool = new sequence_clustering(list, structure, model);
-		}
-		end = clock();
-		duration = (double)(end-start)/CLOCKS_PER_SEC;
-		printf("Sequence clustering finished in: %f seconds\n", duration);
-	}*/
-	return NULL;
-}
-
-void *ThreadStartup2(void *_Object)
-{
-	args *p = (args *)_Object;
-	return p->job->process(_Object);
 }

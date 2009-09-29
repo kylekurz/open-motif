@@ -48,15 +48,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <time.h>
 #include <vector>
 
-//#include "Cluster_method.h"
 #include "Data_structure.h"
-//#include "Edit_cluster.h"
-//#include "Hamming_cluster.h"
-//#include "Markov_model.h"
 #include "Module_discovery.h"
-//#include "Module_enumeration.h"
 #include "OWEF_args.h"
-//#include "Parallel_radix_trie.h"
 #include "Radix_trie.h"
 #include "Scores.h"
 #include "Word_scoring.h"
@@ -112,9 +106,6 @@ class owef
 		
 		//output all of the information currently stored about the input
 		void output();
-		
-		//process the threads of execution
-		void *process(void *foo);
 		
 	private:
 		//cluster *method;
