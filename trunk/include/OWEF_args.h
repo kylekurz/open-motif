@@ -59,7 +59,7 @@ class owef_args
 		owef_args();
 		
 		//initialized constructor
-		owef_args(bool count, string seq_file, int word_length, int min_length, int min_seqs, int min_O, bool ancestral_filter, bool N_filter, bool missing, bool enumerate, bool record_seqs, bool score, int order, bool revcomp, bool pval, bool pthr, double pthresh, string prefix, bool parallel, string log_file);
+		owef_args(bool count, string seq_file, int word_length, int min_length, int min_seqs, int min_O, bool ancestral_filter, bool N_filter, bool missing, bool enumerate, bool record_seqs, bool score, int order, bool revcomp, bool pval, bool pthr, double pthresh, bool fam, string prefix, bool parallel, string log_file);
 		
 		void write_logs();
 		
@@ -109,6 +109,8 @@ class owef_args
 		bool pthr;
 		//threshold value
 		double pthresh;
+		//Family Stuff
+		bool fam;
 		//prefix for unique job id's
 		string prefix;
 		//run the job with parallel code?

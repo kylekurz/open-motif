@@ -56,7 +56,7 @@ int main(int argc, char *argv[])
 	bool enumerate = 0;
 	bool missing = 0;
 	bool N_filter = 0;
-  	bool record_seqs = 0;
+	bool record_seqs = 0;
 	
 	//scoring stage variables
 	bool score = 0;
@@ -65,6 +65,9 @@ int main(int argc, char *argv[])
 	bool pval = 0;
 	bool pthr = 0;
 	double pthresh = 0.05;
+	
+	//word family stage variables
+	bool fam = 0;
 	
 	//job variables
 	string directory = "";
@@ -122,6 +125,8 @@ int main(int argc, char *argv[])
 				}
 			}
 		}
+		cout << "Perform familying? (enter 0 for no, 1 for yes): ";
+		cin >> fam;
 	}
 	//otherwise read the options and set flags
 	else
@@ -143,6 +148,7 @@ int main(int argc, char *argv[])
 		flags.push_back("-r");
 		flags.push_back("-p");
 		flags.push_back("-pt");
+		flags.push_back("--family");
 		flags.push_back("--prefix");
 		flags.push_back("--parallel");
 		flags.push_back("-h");
@@ -208,12 +214,15 @@ int main(int argc, char *argv[])
 					pthresh = atof(argv[++i]);
 					break;
 				case 16:
-					prefix = argv[++i];
+					fam = true;
 					break;
 				case 17:
-					parallel = true;
+					prefix = argv[++i];
 					break;
 				case 18:
+					parallel = true;
+					break;
+				case 19:
 					cout << endl << "Command options format: \n./OWEFexec [--count -i sequence_file -l word_length -ml minimum_length -ms minimum_sequences -mo minimum_occurrences <-a> <-n> <-m> <-e> <-rs>] [--score -o markov_order <-r> <-p>] [--cluster -s #_of_clusters -c sort_column -t cluster_type -d distance -sm] [--scatter] [--distribution <-dc number> <-dn>] [--cooccurrence <-cm map_name> <-cd dist_name> <-cn number> <-cc> <-cs>] [--prefix JobID]" << endl;
 					cout << endl << "Counting stage options:" << endl;
 					cout << endl << "  Required:" << endl;
@@ -271,7 +280,7 @@ int main(int argc, char *argv[])
 	//they are implementing
 	//*******************************************************************
 	owef_args *from_input;
-	from_input = new owef_args(count, seq_file, word_length, min_length, min_seqs, min_O, ancestral_filter, N_filter, missing, enumerate, record_seqs, score, order, revcomp, pval, pthr, pthresh, prefix, parallel, job_log);
+	from_input = new owef_args(count, seq_file, word_length, min_length, min_seqs, min_O, ancestral_filter, N_filter, missing, enumerate, record_seqs, score, order, revcomp, pval, pthr, pthresh, fam, prefix, parallel, job_log);
 	
 	from_input->write_logs();
 
