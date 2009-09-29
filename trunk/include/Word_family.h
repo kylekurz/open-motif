@@ -57,7 +57,8 @@ class word_family
       ~word_family();
 
     //Make Family
-      string create_family(string w,data *structure, word_scoring *model, int order);
+      double create_family(string w,data *structure, word_scoring *model, int order);
+      double condAsCoVar(string w1, string w2, int order, data *structure, scores t, scores s);
 
   protected:
     owef_args *list;      
