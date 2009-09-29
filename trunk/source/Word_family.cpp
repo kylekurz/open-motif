@@ -40,7 +40,7 @@ word_family::~word_family()
 	//no op
 }
 
-word_family::word_family(owef_args *input_list,data *structure, word_scoring *model)
+word_family::word_family(owef_args *input_list,data *structure, rmes_model *model)
 {
 	cout<<"Creating Word Families"<<endl;
 	list=input_list;
@@ -56,29 +56,32 @@ word_family::word_family(owef_args *input_list,data *structure, word_scoring *mo
 			cout << i+list->minlength << endl;
 	    string next_word = structure->get_next_word(i+list->minlength);
 	    cout<<"next word"<<next_word<<endl;
-	    create_family(next_word,structure);
+	    for (int i=1; i<static_cast<int> (next_word.length()-1); i++) 
+			{
+				char x = next_word[i];
+				next_word[i] = 'N';
+				
+	    	create_family(next_word,structure, model, list->order);
+	    	
+	    	next_word[i] = x;
+	    }
   	}
   }
 }
 
 
-string word_family::create_family(string w,data *structure) 
+string word_family::create_family(string w,data *structure, rmes_model *model, int order) 
 {
 	if(w.length() > 2)
 	{
 		cout << "Word " << w << endl;
 		//w = "ANA";
-		for (int i=1; i<static_cast<int> (w.length()-1); i++) 
+		
+		vector<string> temp = structure->get_regex_matches(w);
+		cout << "size " << temp.size() << endl;
+		for(int p=0; p < static_cast<int>(temp.size()); p++)
 		{
-			char x = w[i];
-			w[i] = 'N';
-			vector<string> temp = structure->get_regex_matches(w);
-			cout << "size " << temp.size() << endl;
-			for(int p=0; p < static_cast<int>(temp.size()); p++)
-			{
-				cout << "Exploded Word: " << temp[p] << endl;
-			}
-			w[i] = x;
+			cout << "Exploded Word: " << temp[p] << " Expected: " << model->condAsExpect(temp[p], order, structure) << endl;
 		}
   } 	
 	return "AAA";
