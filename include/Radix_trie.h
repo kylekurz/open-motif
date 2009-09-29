@@ -54,6 +54,8 @@ class radix_trie : public data
 		int get_count(string motif);
 		//function to get sequence count
 		int get_seqs(string motif);
+		//function to return all words that match a regular expression
+		vector<string> get_regex_matches(string regex);
 		//function to get all of the sequences from the input file
 		vector<string> get_seq_file();
 		//function to iterate through the words contained in the data structure
