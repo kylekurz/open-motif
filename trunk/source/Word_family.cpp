@@ -48,7 +48,6 @@ word_family::word_family(owef_args *input_list,data *structure, word_scoring *mo
   
 	
 	int num_files = (list->maxlength - list->minlength)+1;
-	//cout << "num files: " << num_files << endl;
 	for(int i=0; i<num_files; i++)
 	{
 		stringstream stream_2;
@@ -73,8 +72,7 @@ word_family::word_family(owef_args *input_list,data *structure, word_scoring *mo
 				{
 					v.push_back(next_word);
 	    		ratio_file << next_word << "," << create_family(next_word,structure, model, list->order) << endl;
-	    	}
-	    	
+	    	}	    	
 	    	next_word[i] = x;
 	    }
   	}
@@ -111,22 +109,19 @@ double word_family::create_family(string w,data *structure, word_scoring *model,
 			{
 				scores *s = new scores;
 				model->compute_scores(s, temp[j], structure, order);
-				covar += condAsCoVar(temp[i],temp[j],order,structure,t,s);				
+				covar += condAsCoVar(temp[i],temp[j],order,structure,t,s, model);				
 				//cout << "Exploded Word: " << temp[i] << " vs. " <<  temp[j] << endl;
 			}			
 		}
 		var += covar;
-		
-		//cout << "Word: " << w << " Expect: " << expect << " Variance: " << var << endl;
 		
 		ratio = expect / std::sqrt(var); // Needs to be (O - E) / sqrt(V)
   }
 	return ratio;
 }
 
-double word_family::condAsCoVar(string w1, string w2, int m, data *structure, scores *t, scores *s)
+double word_family::condAsCoVar(string w1, string w2, int m, data *structure, scores *t, scores *s, word_scoring *model)
 {
-	
   double covar=0.0;
   
   if (w1.compare(w2) == 0) 
@@ -155,96 +150,128 @@ double word_family::condAsCoVar(string w1, string w2, int m, data *structure, sc
 				if (find(known_words.begin(), known_words.end(), sub1) == known_words.end() && w2.find(sub1)!=string::npos) 
 				{
         	known_words.push_back(sub1);
-        	//cout << "W1 " << sub1 << endl;
         }
       
 	      string sub2 = w2.substr(i, m + 1);
 				if (find(known_words.begin(), known_words.end(), sub2) == known_words.end() && w1.find(sub2)!=string::npos) 
 				{
 	        known_words.push_back(sub2);
-	        //cout << "W2 " << sub2 << endl;
 	      }
       }
 			
 			for(int i=0; i < static_cast<int>(known_words.size()); i++)
 			{
-				string word = known_words[i];
-				//cout << "Known Words " << word << endl;
-				//Count the subword in the two words cw1 and cw2
+				string word = known_words[i];				
 				int cw1 = 0;
 				int cw2 = 0;
+				
+				int strict_cw1 = 0;
+				int strict_cw2 = 0;
+				
 				int q1 = 0;
-				for (int i = 0; i<static_cast<int> (w1.length() - m); i++) 
-      	{      	
-					string sub1 = w1.substr(i, m + 1);
-					if (sub1.compare(word) == 0)
-					{
-						cw1++;
-					}
-					string sub2 = w2.substr(i, m + 1);
-					if (sub2.compare(word) == 0)
-					{
-						cw2++;
-					}
-					
-					//Count the subword in the sequences q1
-					for (int i = 0; i<static_cast<int> (word.length() - m); i++) 
-		      {      	
-						string sub = word.substr(i, m);
-						for (int j = 0; j < 4; j++) 
+
+				string sub = word.substr(i, m);
+				for (int j = 0; j < 4; j++) 
+				{
+					string temp = sub;
+					temp.append(v[j]);
+					q1 += structure->get_count(temp);
+					for (int i = 0; i<static_cast<int> (w1.length() - m); i++) 
+      		{ 
+						string sub1 = w1.substr(i, m + 1);
+						if (sub1.compare(temp) == 0)
 						{
-							string temp = sub;
-							temp.append(v[j]);
-							q1 += structure->get_count(temp);
+							cw1++;
+						}
+						if (sub1.compare(word) == 0)
+						{
+							strict_cw1++;
+						}
+						
+						string sub2 = w2.substr(i, m + 1);
+						if (sub2.compare(temp) == 0)
+						{
+							cw2++;
+						}
+						if (sub2.compare(word) == 0)
+						{
+							strict_cw2++;
 						}
 					}
-					
-					cout << "Count W1 " << cw1 << endl;
-			  	cout << "Count W2 " << cw2 << endl;
-			  	cout << "Q1       " << q1  << endl;
+
 				}				
+				covar += ((double)cw1*(double)cw2) / (double)q1;
 				
-				covar += (double)cw1*(double)cw2 / (double)q1;
+				covar -= ((double)(strict_cw1 / 4) * (double)(strict_cw2 / 4)) / (double) structure->get_count(word);
       }
-      /*
-      long firstIndexW1 = w1.substring(0,m-1);
-      long firstIndexW2 = w2.substring(0,m-1);
-      double countW2Seq=0.0;
-      double countW2W1=0.0;
-      double countW1Seq=0.0;
-      double countW1W2=0.0;
-			*/
+      
+      double countW2Seq = 0.0;
+      double countW2W1  = 0.0;
+      double countW1Seq = 0.0;
+      double countW1W2  = 0.0;
 			
-			/*
       for (long baseIndex=0;baseIndex<Alphabet::alphabet->size();baseIndex++) 
       {
-        countW1W2+=wordCounterW2.wordCount(m+1,Alphabet::alphabet->factor()*firstIndexW1+baseIndex);
-        countW1Seq+=c.wordCount(m+1,Alphabet::alphabet->factor()*firstIndexW1+baseIndex);
-        countW2W1+=wordCounterW1.wordCount(m+1,Alphabet::alphabet->factor()*firstIndexW2+baseIndex);
-        countW2Seq+=c.wordCount(m+1,Alphabet::alphabet->factor()*firstIndexW2+baseIndex);
+      	string temp1 = w1.substr(0,m);
+      	string temp2 = w2.substr(0,m);
+      	
+      	temp1.append(v[baseIndex]);
+      	temp2.append(v[baseIndex]);
+      	
+      	for (int i = 0; i<static_cast<int> (w1.length() - m); i++) 
+    		{ 
+					string sub1 = w1.substr(i, m + 1);
+					if (sub1.compare(temp1) == 0)
+					{
+						countW1W2++;
+					}
+					
+					string sub2 = w2.substr(i, m + 1);
+					if (sub2.compare(temp2) == 0)
+					{
+						countW2W1++;
+					}
+				}
+      	      	
+        countW1Seq+=structure->get_count(temp1);
+        countW2Seq+=structure->get_count(temp2);
       }
 
       covar -= countW2W1 /  countW2Seq;
       covar -= countW1W2 /countW1Seq ;
 
-      if (firstIndexW1 == firstIndexW2)
+      if (w1.substr(0,m).compare(w2.substr(0,m)) == 0)
       {
         covar += 1.0 / countW1Seq;
 			}
 			
       covar *= expectW1 * expectW2;
 
-      for (long d=m+1-w1.length() ; d < w1.length()-m ; d++) 
+      //
+      // Up to here 100% result identity
+      //
+      Word word1 = w1;
+      Word word2 = w2;
+      
+      for (int d = m + 1 - (int)w1.length() ; d < (int)w1.length()-m ; d++) 
       {
-        auto_ptr<Word> overlapWord(w1.overlaps(w2,d));
-        if (overlapWord.get())
-        {
-          covar += condAsExpect(*overlapWord.get(),m,c);
-        }
-      }*/
+	  		auto_ptr<Word> overlapWord(word1.overlaps(word2,d));
+	  		if (overlapWord.get())
+	  		{
+	  			scores *u = new scores;
+	  			
+	  			std::stringstream stream_1;
+			    string overlap;
+			    stream_1.clear();
+			    stream_1 << Word(*overlapWord.get());
+			    stream_1 >> overlap;
+			    
+					model->compute_scores(u, overlap, structure, m);
+	    		covar += u->expect;
+	    	}
+      }
     }
   }
-  cout << "Word1: " << w1 << " Word2: " << w2 << " Covar " << covar << endl;
   return covar;
 }
 

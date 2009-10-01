@@ -163,7 +163,6 @@ double rmes_model::condAsExpect(const Word &w, const short m, data *structure) {
     return expect;
 }
 
-
 //*compute condAsVar with data*structure instead of Counter
 
 double rmes_model::condAsVar(const Word &w, const short m, data *structure) {
@@ -200,6 +199,13 @@ double rmes_model::condAsVar(const Word &w, const short m, data *structure) {
 
                     //cout << "Subword " << sw << " Count " << structure->get_count(sw) << endl;
                     //cout << "\t" << sw << endl;
+                    /*
+                    vector<string> v;
+                    v.push_back("a");
+                    v.push_back("c");
+                    v.push_back("g");                  
+                    v.push_back("t");
+                    */
 
                     vector<string> v;                   
                     string tmp="";
@@ -208,7 +214,7 @@ double rmes_model::condAsVar(const Word &w, const short m, data *structure) {
                         tmp=Alphabet::alphabet->character(baseIndex);
                         v.push_back(tmp);
                     }
-                    for (int j = 0; j < Alphabet::alphabet->size(); j++) {
+                    for (int j = 0; j < 4; j++) {
                         string temp = sw;
                         int count = structure->get_count(temp.append(v[j]));
                         q1 += count;
