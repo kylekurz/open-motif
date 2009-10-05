@@ -91,36 +91,7 @@ void* listener(void *_Object)
 	
 //initialized radix trie
 radix_trie::radix_trie(owef_args *from_input)
-{
-
-	//push the alphabet into the vector (optimized later)
-	conversion.push_back('A');
-	conversion.push_back('C');
-	conversion.push_back('G');
-	conversion.push_back('T');
-	conversion.push_back('B');
-	conversion.push_back('D');
-	conversion.push_back('E');
-	conversion.push_back('F');
-	conversion.push_back('G');
-	conversion.push_back('H');
-	conversion.push_back('I');
-	conversion.push_back('J');
-	conversion.push_back('K');
-	conversion.push_back('L');
-	conversion.push_back('M');
-	conversion.push_back('O');
-	conversion.push_back('P');
-	conversion.push_back('Q');
-	conversion.push_back('R');
-	conversion.push_back('S');
-	conversion.push_back('U');
-	conversion.push_back('V');
-	conversion.push_back('W');
-	conversion.push_back('X');
-	conversion.push_back('Y');
-	conversion.push_back('Z');
-	
+{	
 	#ifdef KKURZ_MPI
 	// create new thread for listener, which will wait for requests
 	pthread_t listen_thread;
@@ -248,6 +219,7 @@ radix_trie::radix_trie(owef_args *from_input)
 	#endif
 	if(!list->score)
 		output();
+	reset();
 }
 
 //************************************************************
@@ -607,7 +579,8 @@ string radix_trie::get_next_word(int length)
 				//if we can keep following this branch
 				if(node->branch && node->branch[next_branch]) 
 				{
-					char x = conversion[next_branch];
+					///char x = conversion[next_branch];
+					char x = Alphabet::alphabet->character(next_branch);  // ljn 10/5/2009
 					ret_word += x;
 					node = node->branch[next_branch];
 					next_branch = 0;
@@ -653,7 +626,8 @@ string radix_trie::get_next_word(int length)
 			//if we can keep following this branch
 			if(node && node->branch && node->branch[next_branch]) 
 			{
-				char x = conversion[next_branch];
+				///char x = conversion[next_branch];
+				char x = Alphabet::alphabet->character(next_branch);  // ljn 10/5/2009
 				ret_word += x;
 				node = node->branch[next_branch];
 				next_branch = 0;
@@ -703,7 +677,8 @@ string radix_trie::get_next_word(radix_trie_node *temp_root, int length)
 				//if we can keep following this branch
 				if(node->branch && node->branch[next_branch]) 
 				{
-					char x = conversion[next_branch];
+					///char x = conversion[next_branch];
+					char x = Alphabet::alphabet->character(next_branch);  // ljn 10/5/2009
 					ret_word += x;
 					node = node->branch[next_branch];
 					next_branch = 0;
@@ -756,7 +731,8 @@ string radix_trie::get_next_word(radix_trie_node *temp_root, int length)
 			//if we can keep following this branch
 			if(node && node->branch && node->branch[next_branch]) 
 			{
-				char x = conversion[next_branch];
+				///char x = conversion[next_branch];
+				char x = Alphabet::alphabet->character(next_branch);  // ljn 10/5/2009
 				ret_word += x;
 				node = node->branch[next_branch];
 				next_branch = 0;
@@ -983,7 +959,7 @@ void radix_trie::count_words()
 	}
 }
 
-int radix_trie::locate_branch(char x)
+/*int radix_trie::locate_branch(char x)
 {
 	x = toupper(x);
 	int loc = -1;
@@ -998,6 +974,15 @@ int radix_trie::locate_branch(char x)
 	if(loc >= ALPH)
 		loc = ALPH-1;
 	return loc;
+}*/
+
+// ljn added 10/5/2009
+int radix_trie::locate_branch(char x)
+{
+	int branch_index = -1;
+	branch_index = Alphabet::alphabet->base(x);
+	///cout << "Returning branch index: " << branch_index << endl;
+	return branch_index;
 }
 
 //convert all letters in word to uppercase letters
