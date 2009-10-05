@@ -152,9 +152,6 @@ class radix_trie : public data
 		vector<radix_trie_node *> last_ext_loc;
 		int next_branch;	
 		bool flag;
-		
-		//vector to hold the characters in the alphabet for conversion
-		vector<char> conversion;
 };
 
 #endif

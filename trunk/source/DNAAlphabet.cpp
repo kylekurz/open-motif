@@ -48,10 +48,10 @@ namespace rmes {
   DNAAlphabet::buildNucleotideVector()
   {
     vector<string> nucvec;
-    nucvec.push_back("aA");
-    nucvec.push_back("gG");
-    nucvec.push_back("cC");
-    nucvec.push_back("tT");
+    nucvec.push_back("Aa");
+    nucvec.push_back("Cc");
+    nucvec.push_back("Gg");
+    nucvec.push_back("Tt");
 
     return nucvec;
   }
