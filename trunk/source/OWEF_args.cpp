@@ -40,7 +40,7 @@ owef_args::owef_args()
 }
 
 //initialized constructor
-owef_args::owef_args(bool count_in, string seq_file_in, int word_length_in, int min_length_in, int min_seqs_in, int min_O_in, bool ancestral_filter_in, bool N_filter_in, bool missing_in, bool enumerate_in, bool record_seqs_in, bool score_in, int order_in, bool revcomp_in, bool pval_in, bool pthr_in, double pthresh_in, bool fam_in, int no_n, string prefix_in, bool parallel_in, string log_file_in)
+owef_args::owef_args(bool count_in, string seq_file_in, int word_length_in, int min_length_in, int min_seqs_in, int min_O_in, bool ancestral_filter_in, bool N_filter_in, bool missing_in, bool enumerate_in, bool record_seqs_in, bool score_in, int order_in, bool revcomp_in, bool pval_in, bool pthr_in, double pthresh_in, bool fam_in, int no_n_in, string prefix_in, bool parallel_in, string log_file_in)
 {
 	//do counting?
 	count = count_in;
@@ -78,6 +78,7 @@ owef_args::owef_args(bool count_in, string seq_file_in, int word_length_in, int 
 	pthresh = pthresh_in;
 	//Do Familying
 	fam = fam_in;
+	no_n = no_n_in;
 	//prefix for unique job id's
 	prefix = prefix_in;
 	//run the job in parallel?

@@ -152,6 +152,7 @@ int main(int argc, char *argv[])
 		flags.push_back("-p");
 		flags.push_back("-pt");
 		flags.push_back("--family");
+		flags.push_back("-no");
 		flags.push_back("--prefix");
 		flags.push_back("--parallel");
 		flags.push_back("-h");
@@ -218,15 +219,17 @@ int main(int argc, char *argv[])
 					break;
 				case 16:
 					fam = true;
-					no_n = atoi(argv[++i]);
 					break;
 				case 17:
-					prefix = argv[++i];
+					no_n = atoi(argv[++i]);
 					break;
 				case 18:
-					parallel = true;
+					prefix = argv[++i];
 					break;
 				case 19:
+					parallel = true;
+					break;
+				case 20:
 					cout << endl << "Command options format: \n./OWEFexec [--count -i sequence_file -l word_length -ml minimum_length -ms minimum_sequences -mo minimum_occurrences <-a> <-n> <-m> <-e> <-rs>] [--score -o markov_order <-r> <-p>] [--cluster -s #_of_clusters -c sort_column -t cluster_type -d distance -sm] [--scatter] [--distribution <-dc number> <-dn>] [--cooccurrence <-cm map_name> <-cd dist_name> <-cn number> <-cc> <-cs>] [--prefix JobID]" << endl;
 					cout << endl << "Counting stage options:" << endl;
 					cout << endl << "  Required:" << endl;
