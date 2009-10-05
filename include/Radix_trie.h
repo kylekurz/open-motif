@@ -13,8 +13,9 @@ Copyright (C) 2009  Jens Lichtenberg, Kyle Kurz, Lonnie Welch, Frank Drews, Soph
 Hoebeke, Finn Drablos, Geir Kjetil Sandve, Lee Nau, Xiaoyu Liang, Rami Alouran, Matthew Wiley
 */
 
-
+#include "Alphabet.h"
 #include "Data_structure.h"
+#include "DNAAlphabet.h"
 #include "Radix_trie_node.h"
 
 #ifdef KKURZ_MPI
@@ -24,7 +25,9 @@ Hoebeke, Finn Drablos, Geir Kjetil Sandve, Lee Nau, Xiaoyu Liang, Rami Alouran, 
 #ifndef KKURZ_RADIX_TRIE
 #define KKURZ_RADIX_TRIE
 
-#define ALPH 5
+using namespace rmes;
+
+#define ALPH (Alphabet::alphabet->size()+1)
 
 using namespace std;
 
@@ -122,9 +125,12 @@ class radix_trie : public data
 		//search for missing words in the dataset
 		void miss_search(radix_trie_node *root, ofstream &ofile, int length_rem, string word);
 		
+		//function to locate the appropriate branch from a character
+		int locate_branch(char x);
+		
 		//convert strings to uppercase
-		string convert(string check);
-		string unconvert(string check);
+		//string convert(string check);
+		//string unconvert(string check);
 		string to_upper(const string & word );
 				
 		//***********************************************************
@@ -146,6 +152,9 @@ class radix_trie : public data
 		vector<radix_trie_node *> last_ext_loc;
 		int next_branch;	
 		bool flag;
+		
+		//vector to hold the characters in the alphabet for conversion
+		vector<char> conversion;
 };
 
 #endif

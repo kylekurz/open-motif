@@ -92,6 +92,35 @@ void* listener(void *_Object)
 //initialized radix trie
 radix_trie::radix_trie(owef_args *from_input)
 {
+
+	//push the alphabet into the vector (optimized later)
+	conversion.push_back('A');
+	conversion.push_back('C');
+	conversion.push_back('G');
+	conversion.push_back('T');
+	conversion.push_back('B');
+	conversion.push_back('D');
+	conversion.push_back('E');
+	conversion.push_back('F');
+	conversion.push_back('G');
+	conversion.push_back('H');
+	conversion.push_back('I');
+	conversion.push_back('J');
+	conversion.push_back('K');
+	conversion.push_back('L');
+	conversion.push_back('M');
+	conversion.push_back('O');
+	conversion.push_back('P');
+	conversion.push_back('Q');
+	conversion.push_back('R');
+	conversion.push_back('S');
+	conversion.push_back('U');
+	conversion.push_back('V');
+	conversion.push_back('W');
+	conversion.push_back('X');
+	conversion.push_back('Y');
+	conversion.push_back('Z');
+	
 	#ifdef KKURZ_MPI
 	// create new thread for listener, which will wait for requests
 	pthread_t listen_thread;
@@ -104,7 +133,7 @@ radix_trie::radix_trie(owef_args *from_input)
 	#endif
 
 	cout << endl << "Creating Radix trie..." << endl << endl;
-	
+
 	//point to the input parameters
 	list = from_input;
 	
@@ -113,9 +142,6 @@ radix_trie::radix_trie(owef_args *from_input)
 	clock_t start, end;
 	double duration;
 	start = clock();
-	//vector<VSTRUCT> temp;
-	//for(int i=0; i<list->maxlength; i++)
-	//	last_word.push_back(temp);
 	radix_trie_node *temp = NULL;
 	string word = "";
 	for(int i=0; i<list->maxlength; i++)
@@ -126,6 +152,7 @@ radix_trie::radix_trie(owef_args *from_input)
 		last_ext.push_back(word);
 	}
 	next_branch = 0;
+	
 	//count the words
 	count_words();
 	end = clock();
@@ -234,17 +261,17 @@ radix_trie::radix_trie(owef_args *from_input)
 //function to get word count
 int radix_trie::get_count(string motif)
 {
-	motif = convert(motif);
+	//motif = convert(motif);
 	int count = motif.length();
 	int ret_count = 1;
-	int dest = motif[0] - 'A';
+	int dest = locate_branch(motif[0]);
 	int ret, rc;
 	MPI_Status *status = NULL;
 	//compute all the necessary scores
 	//cout << " count: count " << count << " dest " << dest << " motif " << motif << endl;
 	if(dest != list->rank)
 	{
-		motif = unconvert(motif);
+		//motif = unconvert(motif);
 		rc = MPI_Send(&motif[0], count, MPI_CHAR, dest, 1, MPI_COMM_WORLD);
 		rc = MPI_Recv(&ret, ret_count, MPI_INT, dest, 1, MPI_COMM_WORLD, status); 
 		return ret;
@@ -260,17 +287,16 @@ int radix_trie::get_count(string motif)
 //function to get sequence count
 int radix_trie::get_seqs(string motif)
 {
-	motif = convert(motif);
+	//motif = convert(motif);
 	int count = motif.length();
 	int ret_count = 1;
-	int dest = motif[0] - 'A';
+	int dest = locate_branch(motif[0]);
 	int ret, rc;
 	MPI_Status *status = NULL;
 	//compute all the necessary scores
-	//cout << "seqs: count " << count << " dest " << dest << " motif " << motif << endl;
 	if(dest != list->rank)
 	{
-		motif = unconvert(motif);
+		//motif = unconvert(motif);
 		rc = MPI_Send(&motif[0], count, MPI_CHAR, dest, 2, MPI_COMM_WORLD);
 		rc = MPI_Recv(&ret, ret_count, MPI_INT, dest, 2, MPI_COMM_WORLD, status); 
 		return ret;
@@ -288,7 +314,7 @@ int radix_trie::get_seqs(string motif)
 //function to get word count
 int radix_trie::get_count(string motif)
 {
-	string temp = convert(motif);
+	string temp = motif;
 	char *t = &temp[0];
 	int l = temp.length();
 	return trie_find(root, t, l);
@@ -297,7 +323,7 @@ int radix_trie::get_count(string motif)
 //function to get sequence count
 int radix_trie::get_seqs(string motif)
 {
-	string temp = convert(motif);
+	string temp = motif;
 	char *t = &temp[0];
 	int l = temp.length();
 	return trie_find_s(root, t, l);
@@ -306,14 +332,14 @@ int radix_trie::get_seqs(string motif)
 
 vector<string> radix_trie::get_regex_matches(string regex)
 {
-	regex = convert(regex);
+	//regex = convert(regex);
 	vector<string> t1, ret_vector;
 	t1.push_back(regex);
 	while (!t1.empty()) 
 	{
 		string temp = t1.back();
 		t1.pop_back();
-		int found = temp.find_first_of('E');
+		int found = temp.find_first_not_of("AaCcGgTt");
 		if(found != -1)
 		{
 			for(int k=0; k<4; k++)
@@ -326,10 +352,10 @@ vector<string> radix_trie::get_regex_matches(string regex)
 		else 
 		{
 			//cout << "Before TEMP " << temp << endl;
-			if(get_count(unconvert(temp)) != 0)
+			if(get_count(temp) != 0)
 			{
 				//cout << "Else TEMP " << temp << endl;
-				ret_vector.push_back(unconvert(temp));
+				ret_vector.push_back(temp);
 			}
 		}
 
@@ -392,19 +418,17 @@ vector<string> radix_trie::get_seq_file()
 //function to increment count
 int radix_trie::inc_count(string motif)
 {
-	int n_loc = motif.find('e');
-	if(n_loc >= 0 && list->n_filter)
-		return (-1);
-	int N_loc = motif.find('E');
-	if(N_loc >= 0 && list->n_filter)
-		return (-1);
+	if(list->n_filter)
+	{
+		int N_loc = motif.find_first_of("Nn");
+		if(N_loc >= 0)
+			return (-1);
+	}
 	if(list->anc_filter)
 	{
-		for(int i=0; i<static_cast<int>(motif.size()); i++)
-		{
-			if(motif[i]-'A' < 0 || motif[i]-'A' > 4)
-				return(-1);
-		}
+		int anc_res = motif.find_first_of("abcdefghijklmnopqrstuvwxyz");
+		if(anc_res >= 0)
+			return (-1);
 	}
 	char *t = &motif[0];
 	int l = motif.length();
@@ -446,7 +470,7 @@ void radix_trie::trie_add (radix_trie_node *& node, char *s, int length, int lev
 	}
 	else
 	{
-		int idx = *s - 'A';
+		int idx = locate_branch(*s);
 		if(!node)
 			node = new radix_trie_node();
 		if (!node->branch)
@@ -479,10 +503,10 @@ int radix_trie::trie_get (radix_trie_node * &node, char *s, int length)
 	}
 	if(!node->branch)
 		return (-1);
-	int idx = *s-'A';
+	int idx = locate_branch(*s);
 	if(!node->branch[idx])
 		return (-1);
-	return trie_get (node->branch[*s - 'A'], s + 1, length-1);
+	return trie_get (node->branch[idx], s + 1, length-1);
 }
 
 //function to get the count of a word in the radix trie (no increment)
@@ -495,7 +519,7 @@ int radix_trie::trie_find (radix_trie_node * &node, char *s, int length)
 		return (node->data);
 	if(!node->branch)
 		return (0);
-	return trie_find (node->branch[*s - 'A'], s + 1, length-1);
+	return trie_find (node->branch[locate_branch(*s)], s + 1, length-1);
 }
 
 //function to get the sequence count of a word in the radix trie (no increment)
@@ -508,13 +532,13 @@ int radix_trie::trie_find_s (radix_trie_node * &node, char *s, int length)
 		return (node->num_seq);
 	if(!node->branch)
 		return (0);
-	return trie_find_s(node->branch[*s - 'A'], s + 1, length-1);
+	return trie_find_s(node->branch[locate_branch(*s)], s + 1, length-1);
 }
 
 //function to delete the trie
 void radix_trie::trie_clear (radix_trie_node * node)
 {
-	for(int i=0; i<5; i++)
+	for(int i=0; i<ALPH; i++)
 	{
 		if(node->branch)
 		{
@@ -532,11 +556,9 @@ void radix_trie::trie_clear (radix_trie_node * node)
 void radix_trie::output()
 {
 	int num_files = (list->maxlength - list->minlength)+1;
-	//cout << num_files << endl;
 	ofstream ofiles[num_files];
 	for(int i=0; i<num_files; i++)
 	{
-		//cout << i << endl;
 		stringstream stream;
 		stream <<  list->prefix << "_" << i+list->minlength << ".csv";
 		string filename;
@@ -546,13 +568,9 @@ void radix_trie::output()
 		log.close();
 		ofiles[i].open(filename.c_str());
 		ofiles[i] << "#Word,Sequences,Occurs" << endl;
-		//cout << list->min_O << ',' << list->min_seqs << endl;
-		//cout << "max J: " << list->num_words[(i+list->minlength)-1] << endl;
 		for(int j=0; j<list->num_words[(i+list->minlength)-1]; j++)
 		{
-			//cout << "J: " << j << endl;
 			string to_out = get_next_word(i+list->minlength);
-			//cout << "to_out: " << to_out << endl;
 			if(get_count(to_out) >= list->min_O && get_seqs(to_out) >= list->min_seqs)
 				ofiles[i] << to_out << ',' << get_seqs(to_out) << ',' << get_count(to_out) << endl;
 		}
@@ -570,7 +588,6 @@ void radix_trie::reset()
 	}
 }
 
-//#ifdef KKURZ_MPI
 //systematically returns EVERY word stored in the trie at a given length.  It is the caller's responsibility
 //to verify that the word meets any requirements of the job (i.e. min_O and min_seqs before output)
 string radix_trie::get_next_word(int length)
@@ -590,7 +607,7 @@ string radix_trie::get_next_word(int length)
 				//if we can keep following this branch
 				if(node->branch && node->branch[next_branch]) 
 				{
-					char x = 'A'+next_branch;
+					char x = conversion[next_branch];
 					ret_word += x;
 					node = node->branch[next_branch];
 					next_branch = 0;
@@ -603,45 +620,11 @@ string radix_trie::get_next_word(int length)
 						while (next_branch >= ALPH) {
 							char branch_id = ret_word[ret_word.length()-1];
 							ret_word = ret_word.substr(0, ret_word.length()-1);
-							next_branch = (branch_id - 'A') + 1;
-							//not needed, new direction
-							/*
-							#ifdef KKURZ_MPI
-							MPI_Status status;
-							int rc, dest, i;
-							string ret, to_send;
-							stringstream str;
-							str << length;
-							str >> to_send;
-							dest = ret_word[0] - 'A';
-							if(ret_word.length() == 0)
-							{
-								if(next_branch != list->rank)
-								{
-									string motif = unconvert(ret_word);
-									i = list->rank+1;
-									str << length;
-									str >> to_send;
-									//cout << "first loop " << i << endl;
-									while(i < ALPH-1 && ret_word.compare("") == 0)
-									{
-										rc = MPI_Send(&to_send, to_send.length(), MPI_CHAR, i, 4, MPI_COMM_WORLD);
-										rc = MPI_Recv(&ret, length, MPI_CHAR, i, 4, MPI_COMM_WORLD, &status);
-										ret_word = ret;
-										if(ret_word.compare("") == 0)
-											i++;
-									}
-									last_loc[length-1] = NULL;
-									last_word[length-1] = ret_word;
-									return unconvert(ret_word);
-								}
-							}
-							#endif
-							*/
+							next_branch = (locate_branch(branch_id)) + 1;
 							node = root;
 							for (int i=0; i<static_cast<int>(ret_word.length()); i++) {
-								if(node && node->branch && node->branch[ret_word[i] - 'A']) {
-									node = node->branch[ret_word[i] - 'A'];
+								if(node && node->branch && node->branch[locate_branch(ret_word[i])]) {
+									node = node->branch[locate_branch(ret_word[i])];
 								}
 							}
 						}						
@@ -650,109 +633,45 @@ string radix_trie::get_next_word(int length)
 			}
 			last_loc[length-1] = node;
 			last_word[length-1] = ret_word;
-			return unconvert(ret_word);
+			return ret_word;
 		}
 	}
 	//otherwise we have something and can start from there...
 	else {
-		//cout << "in else " << last_word[length-1] << endl;
-		//not needed, new direction
-		/*
-		#ifdef KKURZ_MPI
-		MPI_Status status;
-		int rc, dest, i;
-		string ret, to_send;
-		stringstream str;
-		str << length;
-		str >> to_send;
-		dest = last_word[length-1][0] - 'A';
-		if (dest != list->rank ) {
-			string motif = unconvert(ret_word);
-			i = list->rank+1;
-			//cout << "second loop " << i << endl;
-			while(i < ALPH-1 && ret_word.compare("") == 0)
-			{
-				rc = MPI_Send(&to_send, to_send.length(), MPI_CHAR, i, 4, MPI_COMM_WORLD);
-				rc = MPI_Recv(&ret, length, MPI_CHAR, i, 4, MPI_COMM_WORLD, &status);
-				ret_word = ret;
-				if(ret_word.compare("") == 0)
-					i++;
-			}
-			last_loc[length-1] = NULL;
-			last_word[length-1] = ret_word;
-			return unconvert(ret_word);
-		}
-		#endif
-		*/
 		char branch_id = last_word[length-1][last_word[length-1].length()-1];
 		ret_word = last_word[length-1].substr(0, last_word[length-1].length()-1);
-		next_branch = (branch_id - 'A') + 1;
-		//cout << "ret word " << ret_word << " next branch " << next_branch << endl;
+		next_branch = locate_branch(branch_id) + 1;
 		node = root;
 		for (int i=0; i<static_cast<int>(ret_word.length()); i++) {
-			if(node && node->branch && node->branch[ret_word[i] - 'A']) {
-				node = node->branch[ret_word[i] - 'A'];
+			if(node && node->branch && node->branch[locate_branch(ret_word[i])]) {
+				node = node->branch[locate_branch(ret_word[i])];
 			}
 		}
 		//hunt until we find a word long enough to be the "first"
 		while(static_cast<int>(ret_word.length()) < length) 
 		{
-			//cout << "in while" << next_branch << endl;
 			//if we can keep following this branch
-			//cout << next_branch << " " << branch_id << endl;
 			if(node && node->branch && node->branch[next_branch]) 
 			{
-				//cout << "in if" << endl;
-				char x = 'A'+next_branch;
+				char x = conversion[next_branch];
 				ret_word += x;
-				//cout << "later loop " << ret_word << endl;
 				node = node->branch[next_branch];
 				next_branch = 0;
 			}
 			//otherwise, gotta increment and look at the next branch
 			else 
 			{
-				//cout << "in else" << endl;
 				next_branch++;
 				if (next_branch >= ALPH) {
 					char branch_id;
 					while (next_branch >= ALPH) {
 						branch_id = ret_word[ret_word.length()-1];					
 						ret_word = ret_word.substr(0, ret_word.length()-1);
-						//cout << "new sub " << ret_word << endl;
-						next_branch = (branch_id - 'A') + 1;
-						//cout << "HERE " << branch_id << endl;
-						//not needed, new direction
-						/*
-						#ifdef KKURZ_MPI
-						if(ret_word.length() == 0)
-						{
-							if(next_branch != list->rank)
-							{
-								string motif = unconvert(ret_word);
-								i = list->rank+1;
-								str << length;
-								str >> to_send;
-								while(i < ALPH-1 && ret_word.compare("") == 0)
-								{
-									//cout << "second inner loop " << i << endl;
-									rc = MPI_Send(&to_send, to_send.length(), MPI_CHAR, i, 4, MPI_COMM_WORLD);
-									rc = MPI_Recv(&ret, length, MPI_CHAR, i, 4, MPI_COMM_WORLD, &status);
-									ret_word = ret;
-									if(ret_word.compare("") == 0)
-										i++;
-								}
-								last_loc[length-1] = NULL;
-								last_word[length-1] = ret_word;
-								return unconvert(ret_word);
-							}
-						}
-						#endif
-						*/
+						next_branch = locate_branch(branch_id) + 1;
 						node = root;
 						for (int i=0; i<static_cast<int>(ret_word.length()); i++) {
-							if(node && node->branch && node->branch[ret_word[i] - 'A']) {
-								node = node->branch[ret_word[i] - 'A'];
+							if(node && node->branch && node->branch[locate_branch(ret_word[i])]) {
+								node = node->branch[locate_branch(ret_word[i])];
 							}
 						}
 					}	
@@ -762,14 +681,13 @@ string radix_trie::get_next_word(int length)
 	}	
 	last_loc[length-1] = node;
 	last_word[length-1] = ret_word;
-	return unconvert(ret_word);
+	return ret_word;
 }
 
 //systematically returns EVERY word stored in the trie at a given length.  It is the caller's responsibility
 //to verify that the word meets any requirements of the job (i.e. min_O and min_seqs before output)
 string radix_trie::get_next_word(radix_trie_node *temp_root, int length)
 {
-	//cout << length << endl;
 	string ret_word = "";
 	radix_trie_node *node = NULL;
 	//if we haven't returned anything yet...
@@ -785,7 +703,7 @@ string radix_trie::get_next_word(radix_trie_node *temp_root, int length)
 				//if we can keep following this branch
 				if(node->branch && node->branch[next_branch]) 
 				{
-					char x = 'A'+next_branch;
+					char x = conversion[next_branch];
 					ret_word += x;
 					node = node->branch[next_branch];
 					next_branch = 0;
@@ -798,11 +716,11 @@ string radix_trie::get_next_word(radix_trie_node *temp_root, int length)
 						while (next_branch >= ALPH) {
 							char branch_id = ret_word[ret_word.length()-1];
 							ret_word = ret_word.substr(0, ret_word.length()-1);
-							next_branch = (branch_id - 'A') + 1;
+							next_branch = locate_branch(branch_id) + 1;
 							node = temp_root;
 							for (int i=0; i<static_cast<int>(ret_word.length()); i++) {
-								if(node && node->branch && node->branch[ret_word[i] - 'A']) {
-									node = node->branch[ret_word[i] - 'A'];
+								if(node && node->branch && node->branch[locate_branch(ret_word[i])]) {
+									node = node->branch[locate_branch(ret_word[i])];
 								}
 							}
 							if(ret_word.length()==0 && next_branch >= ALPH)
@@ -818,59 +736,49 @@ string radix_trie::get_next_word(radix_trie_node *temp_root, int length)
 			}
 			last_ext_loc[length-1] = node;
 			last_ext[length-1] = ret_word;
-			return unconvert(ret_word);
+			return ret_word;
 		}
 	}
 	//otherwise we have something and can start from there...
 	else {
 		char branch_id = last_ext[length-1][last_ext[length-1].length()-1];
-		//cout << branch_id << endl;
 		ret_word = last_ext[length-1].substr(0, last_ext[length-1].length()-1);
-		next_branch = (branch_id - 'A') + 1;
-		//cout << "ret word " << ret_word << " next branch " << next_branch << endl;
+		next_branch = locate_branch(branch_id) + 1;
 		node = temp_root;
 		for (int i=0; i<static_cast<int>(ret_word.length()); i++) {
-			if(node && node->branch && node->branch[ret_word[i] - 'A']) {
-				node = node->branch[ret_word[i] - 'A'];
+			if(node && node->branch && node->branch[locate_branch(ret_word[i])]) {
+				node = node->branch[locate_branch(ret_word[i])];
 			}
 		}
 		//hunt until we find a word long enough to be the "first"
 		while(static_cast<int>(ret_word.length()) < length) 
 		{
-			//cout << "in while" << next_branch << endl;
 			//if we can keep following this branch
-			//cout << next_branch << " " << branch_id << endl;
 			if(node && node->branch && node->branch[next_branch]) 
 			{
-				//cout << "in if" << endl;
-				char x = 'A'+next_branch;
+				char x = conversion[next_branch];
 				ret_word += x;
-				//cout << "later loop " << ret_word << endl;
 				node = node->branch[next_branch];
 				next_branch = 0;
 			}
 			//otherwise, gotta increment and look at the next branch
 			else 
 			{
-				//cout << "in else" << endl;
 				next_branch++;
 				if (next_branch >= ALPH) {
 					char branch_id;
 					while (next_branch >= ALPH) {
 						branch_id = ret_word[ret_word.length()-1];					
 						ret_word = ret_word.substr(0, ret_word.length()-1);
-						//cout << "new sub " << ret_word << " branch " << next_branch << endl;
-						next_branch = (branch_id - 'A') + 1;
+						next_branch = locate_branch(branch_id) + 1;
 						node = temp_root;
 						for (int i=0; i<static_cast<int>(ret_word.length()); i++) {
-							if(node && node->branch && node->branch[ret_word[i] - 'A']) {
-								node = node->branch[ret_word[i] - 'A'];
+							if(node && node->branch && node->branch[locate_branch(ret_word[i])]) {
+								node = node->branch[locate_branch(ret_word[i])];
 							}
 						}
-						//cout << "new sub " << ret_word << " branch " << next_branch << endl;
 						if(ret_word.compare("") == 0 && (next_branch >= ALPH || next_branch < 0))
 						{
-							//cout << "returning" << endl;
 							last_ext_loc[length-1] = NULL;
 							last_ext[length-1].clear();
 							last_ext[length-1] = "";
@@ -883,128 +791,25 @@ string radix_trie::get_next_word(radix_trie_node *temp_root, int length)
 	}	
 	last_ext_loc[length-1] = node;
 	last_ext[length-1] = ret_word;
-	return unconvert(ret_word);
+	return ret_word;
 }
 
 //function to iterate through the subtree and find all occurring words of length x, //from a given seed of length y string 
 string radix_trie::get_next_extension(string seed, int length)
 {
-	seed = convert(seed);
 	length -= seed.length();
 	radix_trie_node *temp_root;
 	temp_root = root;
 	for(int i=0; i<static_cast<int>(seed.length()); i++)
-		temp_root = temp_root->branch[seed[i]-'A'];
-//	cout << "getting word " << seed << endl;
+		temp_root = temp_root->branch[locate_branch(seed[i])];
 	string t = get_next_word(temp_root, length);
-//	cout << "t " << t << endl;
 	if(t.compare("")==0)
 		return "";
 	else
-	{
-		seed = unconvert(seed);
 		return seed.append(t);
-	}
 }
 
-//function to mutate a string to the next physical permutation
-void radix_trie::mutate(string &previous_word)
-{
-	if(list->n_filter)
-	{
-		int end = list->maxlength-1;
-		if(previous_word[end] != 'D')
-		{
-			switch(previous_word[end])
-			{
-				case 'A':
-					previous_word[end]='B';
-					break;
-				case 'B':
-					previous_word[end]='C';
-					break;
-				case 'C':
-					previous_word[end]='D';
-					break;
-			}
-		}
-		else
-		{
-			for(int i=end; i>=0; --i)
-			{
-				if(previous_word[i]=='D')
-					previous_word[i]='A';
-				else
-				{
-					switch(previous_word[i])
-					{
-						case 'A':
-							previous_word[i]='B';
-							break;
-						case 'B':
-							previous_word[i]='C';
-							break;
-						case 'C':
-							previous_word[i]='D';
-							break;
-					}
-					i=0;
-				}
-			}
-		}
-		return;
-	}
-	else
-	{
-		int end = list->maxlength-1;
-		if(previous_word[end] != 'E')
-		{
-			switch(previous_word[end])
-			{
-				case 'A':
-					previous_word[end]='B';
-					break;
-				case 'B':
-					previous_word[end]='C';
-					break;
-				case 'C':
-					previous_word[end]='D';
-					break;
-				case 'D':
-					previous_word[end]='E';
-					break;
-			}
-		}
-		else
-		{
-			for(int i=end; i>=0; --i)
-			{
-				if(previous_word[i]=='E')
-					previous_word[i]='A';
-				else
-				{
-					switch(previous_word[i])
-					{
-						case 'A':
-							previous_word[i]='B';
-							break;
-						case 'B':
-							previous_word[i]='C';
-							break;
-						case 'C':
-							previous_word[i]='D';
-							break;
-						case 'D':
-							previous_word[i]='E';
-							break;
-					}
-					i=0;
-				}
-			}
-		}
-		return;
-	}
-}
+
 
 //function to enumerate all possible strings from a string containing an 'X'
 void radix_trie::enumerate_string(ofstream &ofile, vector<string> words)
@@ -1131,122 +936,6 @@ void radix_trie::miss_search(radix_trie_node *node, ofstream &ofile, int length_
 	}
 }
 
-//convert all characters in a word to upper_case
-string radix_trie::convert(string check)
-{
-	//cout << "converting" << endl;
-	for(int i=0; i<static_cast<int>(check.length()); i++)
-	{
-		if(!(list->anc_filter))
-		{
-			switch(check[i])
-			{
-				case 'a':
-					check[i]='A';
-					break;
-				case 'c':
-					check[i]='B';
-					break;
-				case 'g':
-					check[i]='C';
-					break;
-				case 't':
-					check[i]='D';
-					break;
-				case 'n':
-					check[i]='E';
-					break;
-				case 'A':
-					break;
-				case 'C':
-					check[i]='B';
-					break;
-				case 'G':
-					check[i]='C';
-					break;
-				case 'T':
-					check[i]='D';
-					break;
-				case 'N':
-					check[i]='E';
-					break;
-				default:
-					check[i]='E';
-					break;
-			}
-		}
-		else
-		{
-			switch(check[i])
-			{
-				case 'a':
-					break;
-				case 'c':
-					check[i]='b';
-					break;
-				case 'g':
-					check[i]='c';
-					break;
-				case 't':
-					check[i]='d';
-					break;
-				case 'n':
-					check[i]='e';
-					break;
-				case 'A':
-					break;
-				case 'C':
-					check[i]='B';
-					break;
-				case 'G':
-					check[i]='C';
-					break;
-				case 'T':
-					check[i]='D';
-					break;
-				case 'N':
-					check[i]='E';
-					break;
-				default:
-					check[i]='E';
-					break;
-			}
-		}
-	}	
-	//cout << "returning" << endl;
-	return check;
-}
-
-//convert all characters in a word to upper_case
-string radix_trie::unconvert(string check)
-{
-	for(int i=0; i<static_cast<int>(check.length()); i++)
-	{
-		switch(check[i])
-		{
-			case 'A':
-				break;
-			case 'B':
-				check[i]='C';
-				break;
-			case 'C':
-				check[i]='G';
-				break;
-			case 'D':
-				check[i]='T';
-				break;
-			case 'E':
-				check[i]='N';
-				break;
-			default:
-				check[i]='N';
-				break;
-		}
-	}	
-	return check;
-}
-
-//#ifdef KKURZ_MPI
 //function to count all the words in an input
 void radix_trie::count_words()
 {
@@ -1270,23 +959,19 @@ void radix_trie::count_words()
 		#ifdef KKURZ_MPI
 		}
 		#endif
-		tag = convert(seqs[h]);
-		//cout << "rank " << list->rank << " char " << tag[0] << endl;
-		//cout << "sub " << (tag[0] - 'A') << endl;
+		tag = seqs[h];
 		for(int i=0; i<(static_cast<int>(tag.length())); i++)
 		{
 			#ifdef KKURZ_MPI
-			if((tag[i] - 'A') != list->rank)
+			if(locate_branch(tag[i]) != list->rank)
 				continue;
 			else
 			{
 			#endif
 				int length = min(static_cast<int>(tag.length())-i,list->maxlength);
-				//cout << "length " << length << endl;
 				for(int k=1; k<=length; k++)
 				{
 					string to_count = tag.substr(i, k);
-					//cout << "to count " << to_count << endl;
 					inc_count(to_count);
 				}
 			#ifdef KKURZ_MPI
@@ -1296,16 +981,23 @@ void radix_trie::count_words()
 		list->seq++;
 		tag.clear();
 	}
-	//cout << "rank " << list->rank << endl;
-	//if(!(list->score))
-	//	output();
-	//in.close();
-	//cout << "rank " << list->rank << endl;
-	for(int i=0; i<list->maxlength; i++)
+}
+
+int radix_trie::locate_branch(char x)
+{
+	x = toupper(x);
+	int loc = -1;
+	for(int i=0; i<static_cast<int>(conversion.size()); i++)
 	{
-		vector<string> tmp;
-		breadth_search.push_back(tmp);
+		if(x == conversion[i])
+		{
+			loc = i;
+			i = conversion.size();
+		}
 	}
+	if(loc >= ALPH)
+		loc = ALPH-1;
+	return loc;
 }
 
 //convert all letters in word to uppercase letters
