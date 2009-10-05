@@ -68,6 +68,7 @@ int main(int argc, char *argv[])
 	
 	//word family stage variables
 	bool fam = 0;
+	int no_n = 0;
 	
 	//job variables
 	string directory = "";
@@ -127,6 +128,8 @@ int main(int argc, char *argv[])
 		}
 		cout << "Perform familying? (enter 0 for no, 1 for yes): ";
 		cin >> fam;
+		cout << "How many ambigous nucleotides: ";
+		cin >> no_n;
 	}
 	//otherwise read the options and set flags
 	else
@@ -215,6 +218,7 @@ int main(int argc, char *argv[])
 					break;
 				case 16:
 					fam = true;
+					no_n = atoi(argv[++i]);
 					break;
 				case 17:
 					prefix = argv[++i];
@@ -280,7 +284,7 @@ int main(int argc, char *argv[])
 	//they are implementing
 	//*******************************************************************
 	owef_args *from_input;
-	from_input = new owef_args(count, seq_file, word_length, min_length, min_seqs, min_O, ancestral_filter, N_filter, missing, enumerate, record_seqs, score, order, revcomp, pval, pthr, pthresh, fam, prefix, parallel, job_log);
+	from_input = new owef_args(count, seq_file, word_length, min_length, min_seqs, min_O, ancestral_filter, N_filter, missing, enumerate, record_seqs, score, order, revcomp, pval, pthr, pthresh, fam, no_n, prefix, parallel, job_log);
 	
 	from_input->write_logs();
 

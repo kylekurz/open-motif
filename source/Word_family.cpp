@@ -43,9 +43,8 @@ word_family::~word_family()
 word_family::word_family(owef_args *input_list,data *structure, word_scoring *model)
 {
 	list=input_list;
-	
+	int no_n = list->no_n;
 	cout << "Creating Word Families" << endl;	
-  int no_n = 3;
   
   clock_t start,end;
   double duration_covar  = 0.0;
@@ -81,10 +80,16 @@ word_family::word_family(owef_args *input_list,data *structure, word_scoring *mo
 		{
 	    string next_word = structure->get_next_word(i+list->minlength);
 	    
-	    for (int i=1; i<static_cast<int> (next_word.length()-1); i++) 
+	    for (int i=1; i<static_cast<int> (next_word.length()-no_n-1); i++) 
 			{
+				string temp_word = next_word;
 				char x = next_word[i];
-				next_word[i] = 'N';
+				
+				for(int m = i;m <= no_n; m++)
+				{
+					next_word[m] = 'N';
+				}
+				
 				if(find(families.begin(), families.end(), next_word) == families.end())
 				{	
 					families.push_back(next_word);
@@ -94,7 +99,7 @@ word_family::word_family(owef_args *input_list,data *structure, word_scoring *mo
 	    }
 	  }
 
-		int temp_n = no_n;;
+/*		int temp_n = no_n;;
 		if(no_n - i+list->minlength < 2)
 		{
   		temp_n = no_n - i+list->minlength;
@@ -119,7 +124,7 @@ word_family::word_family(owef_args *input_list,data *structure, word_scoring *mo
 		  }
 		  temp_n--;
 	  }
-	  end=clock();
+*/	  end=clock();
 	  
 	  duration_create += (double)(end-start)/CLOCKS_PER_SEC;
 	  
