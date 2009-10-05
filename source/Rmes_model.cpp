@@ -192,7 +192,7 @@ double rmes_model::condAsVar(const Word &w, const short m, data *structure) {
                         tmp=Alphabet::alphabet->character(baseIndex);
                         v.push_back(tmp);
                     }
-                    for (int j = 0; j < 4; j++) {
+                    for (int j = 0; j < Alphabet::alphabet->size(); j++) {
                         string temp = sw;
                         int count = structure->get_count(temp.append(v[j]));
                         q1 += count;
