@@ -44,13 +44,15 @@ word_family::word_family(owef_args *input_list,data *structure, word_scoring *mo
 {
 	list=input_list;
 	int no_n = list->no_n;
-	cout << "Creating Word Families" << endl;	
+	//int no_n = 3;
+	cout << "Creating Word Families with " << no_n << " ambigous nucleotides." << endl;	
   
   clock_t start,end;
   double duration_covar  = 0.0;
 	double duration_create = 0.0;
 	
 	int num_files = (list->maxlength - list->minlength)+1;
+	int fam_number = 0;
 	for(int i=0; i<num_files; i++)
 	{
 		stringstream stream_2;
@@ -80,52 +82,54 @@ word_family::word_family(owef_args *input_list,data *structure, word_scoring *mo
 		{
 	    string next_word = structure->get_next_word(i+list->minlength);
 	    
-	    for (int i=1; i<static_cast<int> (next_word.length()-no_n-1); i++) 
+	    for (int i=1; i<static_cast<int> (next_word.length()-1); i++) 
 			{
-				string temp_word = next_word;
 				char x = next_word[i];
 				
-				for(int m = i;m <= no_n; m++)
-				{
-					next_word[m] = 'N';
-				}
+				next_word[i] = 'N';
 				
-				if(find(families.begin(), families.end(), next_word) == families.end())
-				{	
+				//This eliminates redundance within the families
+				//if(find(families.begin(), families.end(), next_word) == families.end())
+				//{
+					//cout << next_word << endl;
 					families.push_back(next_word);
-				}
+				//}
 	    	
 	    	next_word[i] = x;
 	    }
 	  }
-
-/*		int temp_n = no_n;;
+	  
+		//cout << "Done with the first set of families" << endl;
+		int temp_n = no_n;
 		if(no_n - i+list->minlength < 2)
 		{
   		temp_n = no_n - i+list->minlength;
   	}
-  	
+
   	while(temp_n > 1)
   	{
 	  	for(int u=0; u < static_cast<int>(families.size()); u++)
 			{
 				string word = families[u];
+				//cout << "Strict word " << word << endl;
 		   	for (int v=1; v < static_cast<int> (word.length()-1); v++) 
 				{
 					char x = word[v];
 					word[v] = 'N';
 					
-					if(find(families.begin(), families.end(), word) == families.end())
-					{				
+					//This eliminates redundance within the families
+					//if(find(families.begin(), families.end(), word) == families.end())
+					//{				
+						//cout << word << endl;
 						families.push_back(word);
-		    	}
+		    	//}
+		    	//cout << word << endl;
 		    	word[v] = x;
 		    }
 		  }
 		  temp_n--;
 	  }
-*/	  end=clock();
-	  
+	  end=clock();
 	  duration_create += (double)(end-start)/CLOCKS_PER_SEC;
 	  
 	  start=clock();
@@ -149,10 +153,11 @@ word_family::word_family(owef_args *input_list,data *structure, word_scoring *mo
 	  
   	ratio_file.close();
   	//cout << "Done Printing" << endl;
+  	fam_number += families.size();
   }
-  cout << "Get Next Word took " << duration_create << " seconds" << endl;
-  cout << "CoVariance took    " << duration_covar  << " seconds" << endl;
-  
+  cout << "Total number of Word Familes: " << fam_number << endl;
+  cout << "Get Next Word took          : " << duration_create << " seconds" << endl;
+  cout << "CoVariance took             : " << duration_covar  << " seconds" << endl;
 }
 
 
@@ -161,7 +166,7 @@ double word_family::create_family(string w,data *structure, word_scoring *model,
 	double ratio = 0;
 	
 	if(w.length() > 2)
-	{		
+	{	
 		double expect = 0;
 		double var = 0;
 		double covar = 0;

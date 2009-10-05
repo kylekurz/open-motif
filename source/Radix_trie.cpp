@@ -304,6 +304,7 @@ int radix_trie::get_seqs(string motif)
 
 vector<string> radix_trie::get_regex_matches(string regex)
 {
+	//cout << regex << endl;
 	//regex = convert(regex);
 	vector<string> t1, ret_vector;
 	t1.push_back(regex);
@@ -314,9 +315,9 @@ vector<string> radix_trie::get_regex_matches(string regex)
 		int found = temp.find_first_not_of("AaCcGgTt");
 		if(found != -1)
 		{
-			for(int k=0; k<4; k++)
+			for(int k=0; k<ALPH-1; k++)
 			{
-				temp[found] = 'A'+k;
+				temp[found] = Alphabet::alphabet->character(k);;
 				//cout << "TEMP " << temp << endl;
 				t1.push_back(temp);
 			}
