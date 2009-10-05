@@ -48,33 +48,14 @@ rmes_model::rmes_model(owef_args *input_list,data *structure)
         //******************************************************************
         int num_files = (list->maxlength - list->minlength)+1;
         //cout << "num files: " << num_files << endl;
-        ofstream ofiles[num_files];
         double d1=0,d2=0;
         for(int i=0; i<num_files; i++){
-        
+		string next_word;        
         	int order = list->order;
         	if(order > (i+list->minlength)-2)
           		order = (i+list->minlength)-2;
         	if(order < 0)
           		order = 0;	
-        	stringstream stream;
-        	stream <<  list->prefix << "_" << i+list->minlength << "_" << order << ".csv";
-        	string filename;
-        	stream >> filename;
-        	ofstream log(list->log_file.c_str(), ios::app);
-        	log << "Scored file: " << filename << endl;
-        	log.close();
-        	ofiles[i].open(filename.c_str());
-        	string next_word = "";
-        	ofiles[i] << "#Word,S,E_s,O,E,O/E,O*ln(O/E),S*ln(S/E_s)";	
-        	if(list->revcomp){
-          	ofiles[i] << ",RevComp,Present,Palindrome";
-        	}
-        	if(list->pval){
-          		ofiles[i] << ",Pval";
-        	}
-        	ofiles[i] << endl;
-
         	double expect;
                 double var;
                 double ratio;
@@ -93,9 +74,7 @@ rmes_model::rmes_model(owef_args *input_list,data *structure)
         		
         		//scores *word = new scores;
                         //get the next word from the data structure
-                        
                         next_word = structure->get_next_word(i+list->minlength);
-                        //cout<<"next word"<<next_word<<endl;
                         start=clock();
                         expect = condAsExpect(next_word,order,structure);
                         end=clock();
@@ -133,7 +112,6 @@ double rmes_model::condAsExpect(const Word &w, const short m, data *structure) {
     std::string word_1;
     stream_1 >> word_1;
     double expect = double(structure->get_count(word_1));
-
     for (int l = 1; l < w.length() - m; l++) {//for1
         long curSubWord = w.substring(l, l + m - 1);
         double quantity = 0.0;
