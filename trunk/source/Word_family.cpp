@@ -103,70 +103,45 @@ word_family::word_family(owef_args *input_list,data *structure, word_scoring *mo
     
 
     		#pragma omp parallel for default(none) shared(ratio_file, i, structure, model) private(j, threadID, families)
-		for(j=0; j < i+list->num_words[list->minlength]; j++)
+		for(j=0; j < i+list->num_words[list->minlength-1]; j++)
 		{
 			string next_word;
     			threadID = omp_get_thread_num();
-    			//printf("thread %d\n", threadID);
     			#pragma omp critical
     			{
 	    			next_word = structure->get_next_word(i+list->minlength);
 			}
-    			for (int k=1; k<static_cast<int> (next_word.length()-1); k++) 
-			{
-				char x = next_word[k];
-				next_word[k] = 'N';
-				families.push_back(next_word);
-    				next_word[k] = x;
-    			}
-    			//cout << "Done with the first set of families" << endl;
 			int temp_n = list->no_n;
 			if(list->no_n - i+list->minlength < 2)
   				temp_n = list->no_n - i+list->minlength;
-
-  			while(temp_n > 1)
+  			
+    			for (int k=1; k<static_cast<int> (next_word.length()-1); k++) 
 			{
-  				for(int u=0; u < static_cast<int>(families.size()); u++)
+				for(int l=0; l<temp_n; l++)
 				{
-					string word = families[u];
-					//cout << "Strict word " << word << endl;
-	 	  			for (int v=1; v < static_cast<int> (word.length()-1); v++) 
+					if(k+l < static_cast<int>(next_word.length())-1)
 					{
-						char x = word[v];
-						word[v] = 'N';
-						families.push_back(word);
-	    					word[v] = x;
-	    				}
-	  			}
-	  			temp_n--;
-  			}
-    			//end=clock();
-  			//duration_create += (double)(end-start)/CLOCKS_PER_SEC;
-  
-  			//start=clock();
+						string copy = next_word;
+						copy.replace(k, l+1, l+1, 'N');
+						families.push_back(copy);
+					}
+    				}
+    			}
   			for(int l=0; l < static_cast<int>(families.size()); l++)
   			{    
   				string motif = families[l];
-  				//cout << "\tScoring(" << motif << ")" << endl;
 				double ratio = create_family(motif,structure, model, list->order);
-				//cout << "Done Scoring" << endl;
 				if(ratio != 0)
 				{
 					#pragma omp critical
 					{
 	   					ratio_file << motif << "," << ratio << endl;
 	   				}
-	   				//cout << motif << "," << ratio << endl;
 	   			}
-   				//cout << "Done with " << motif << endl;
 			}
-			//cout << "Done with Loop" << endl;
-			//end=clock();
-  	
-			//duration_covar += (double)(end-start)/CLOCKS_PER_SEC;
+			families.clear();
   		}
   		ratio_file.close();
-  		//cout << "Done Printing" << endl;
   		fam_number += families.size();
   	}
    	end=clock();
