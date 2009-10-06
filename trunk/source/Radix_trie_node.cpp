@@ -31,6 +31,6 @@ radix_trie_node::radix_trie_node()
 radix_trie_node **radix_trie_node::new_pointer_array (void)
 {
 	radix_trie_node **new_node;
-	new_node = (radix_trie_node **) malloc (sizeof (radix_trie_node *)*5);
+	new_node = (radix_trie_node **) malloc (sizeof (radix_trie_node *)*ALPH);
 	return new_node;
 }

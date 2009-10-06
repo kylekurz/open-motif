@@ -47,7 +47,7 @@ OBJS := $(addprefix $(OBJDIR)/,$(SRCS:.cpp=.o))
 all: $(OBJS)
 
 install: $(OBJS)
-	$(CC) -o $(PROJ) $(CPPFLAGS) $(MAIN) $^ -lpthread
+	$(CC) -o $(PROJ) $(CPPFLAGS) $(MAIN) $^ -lpthread -fopenmp
 
 ifeq ($(OBJDIR),debug)
 all: CPPFLAGS = -Wall -g -pg
@@ -57,7 +57,7 @@ install: CPPFLAGS += $(addprefix -I ,$(INCLUDE_DIRECTORIES))
 endif
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.cpp
-	$(CC) -c $(CPPFLAGS) $(OUTPUT_OPTION) $<
+	$(CC) -c $(CPPFLAGS) $(OUTPUT_OPTION) $< -fopenmp
 
 clean :
 	rm -rf *.o *.gch *-db OWEFexec source/*.o source/*.gch source/*-db source/OWEFexec include/*.o include/*.gch include/*-db include/OWEFexec bin/*.o bin/*.gch bin/*-db bin/OWEFexec release/*.o release/*.gch release/*-db release/OWEFexec debug/*.o debug/*.gch debug/*-db debug/OWEFexec

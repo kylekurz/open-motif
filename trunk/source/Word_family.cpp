@@ -20,15 +20,44 @@ GNU General Public License for more details.You should have received a copy of t
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <iostream>
+#include <omp.h>
 
 #include "Word_family.h"
 
-#include <iostream>
-
-//create_family(string w);
-
 using namespace std;
 using namespace rmes;
+
+extern "C" void *processor(void *);
+
+//structure for passing to parallel processor
+typedef struct args{
+	//thread identifier
+	int thr_id;
+	
+	//job variables
+	data *structure;
+	word_scoring *model;
+	owef_args *my_list;
+	
+	//shared file variable
+	ofstream ratio_file;
+	
+	//my data
+	vector<string> my_data;
+}args;
+
+void *processor(void *_Object)
+{
+	args *p = (args *)_Object;
+	for(int i=0; i<static_cast<int>(p->my_data.size()); i++)
+	{
+		//process the word
+		
+		//output the ratio
+	}
+	return NULL;
+}
 
 word_family::word_family()
 {
@@ -43,121 +72,106 @@ word_family::~word_family()
 word_family::word_family(owef_args *input_list,data *structure, word_scoring *model)
 {
 	list=input_list;
-	int no_n = list->no_n;
 	//int no_n = 3;
-	cout << "Creating Word Families with " << no_n << " ambigous nucleotides." << endl;	
-  
-  clock_t start,end;
-  double duration_covar  = 0.0;
+	cout << "Creating Word Families with " << list->no_n << " ambigous nucleotides." << endl;	
+	//int nprocs = omp_get_num_procs();
+	//cout << "number of processors: " << nprocs << endl;
+	 
+    	clock_t start,end;
+  	//double duration_covar  = 0.0;
 	double duration_create = 0.0;
 	
 	int num_files = (list->maxlength - list->minlength)+1;
 	int fam_number = 0;
+	start=clock();
 	for(int i=0; i<num_files; i++)
 	{
 		stringstream stream_2;
-	  ofstream ratio_file;
-	  string file_name;
-	  stream_2 <<  list->prefix << "_" << i+list->minlength << "_" << list->order << "_wordfamilies.csv";
-	  stream_2 >> file_name;
+	  	ofstream ratio_file;
+	  	string file_name;
+	  	stream_2 <<  list->prefix << "_" << i+list->minlength << "_" << list->order << "_wordfamilies.csv";
+	  	stream_2 >> file_name;
 		ratio_file.open(file_name.c_str());
-  	ratio_file << "Motif,Ratio" << endl;
+  		ratio_file << "Motif,Ratio" << endl;
     
-    vector<string> v;
-    vector<string> families;
+    		vector<string> v;
+    		vector<string> families;
     
-    int terminator = 0;
+    		int threadID, totalThreads, j;
+    		totalThreads = 0;
+    		threadID = 0;
     
-    if(0)
-    {
-    	terminator = 50;
-    }
-    else
-    {
-    	terminator = list->num_words[i+list->minlength-1];
-    }
-    
-    start=clock();
-  	for(int j=0; j < terminator; j++)
-		{
-	    string next_word = structure->get_next_word(i+list->minlength);
-	    
-	    for (int i=1; i<static_cast<int> (next_word.length()-1); i++) 
-			{
-				char x = next_word[i];
-				
-				next_word[i] = 'N';
-				
-				//This eliminates redundance within the families
-				//if(find(families.begin(), families.end(), next_word) == families.end())
-				//{
-					//cout << next_word << endl;
-					families.push_back(next_word);
-				//}
-	    	
-	    	next_word[i] = x;
-	    }
-	  }
-	  
-		//cout << "Done with the first set of families" << endl;
-		int temp_n = no_n;
-		if(no_n - i+list->minlength < 2)
-		{
-  		temp_n = no_n - i+list->minlength;
-  	}
 
-  	while(temp_n > 1)
-  	{
-	  	for(int u=0; u < static_cast<int>(families.size()); u++)
+    		#pragma omp parallel for default(none) shared(ratio_file, i, structure, model) private(j, threadID, families)
+		for(j=0; j < i+list->num_words[list->minlength]; j++)
+		{
+			string next_word;
+    			threadID = omp_get_thread_num();
+    			//printf("thread %d\n", threadID);
+    			#pragma omp critical
+    			{
+	    			next_word = structure->get_next_word(i+list->minlength);
+			}
+    			for (int k=1; k<static_cast<int> (next_word.length()-1); k++) 
 			{
-				string word = families[u];
-				//cout << "Strict word " << word << endl;
-		   	for (int v=1; v < static_cast<int> (word.length()-1); v++) 
+				char x = next_word[k];
+				next_word[k] = 'N';
+				families.push_back(next_word);
+    				next_word[k] = x;
+    			}
+    			//cout << "Done with the first set of families" << endl;
+			int temp_n = list->no_n;
+			if(list->no_n - i+list->minlength < 2)
+  				temp_n = list->no_n - i+list->minlength;
+
+  			while(temp_n > 1)
+			{
+  				for(int u=0; u < static_cast<int>(families.size()); u++)
 				{
-					char x = word[v];
-					word[v] = 'N';
-					
-					//This eliminates redundance within the families
-					//if(find(families.begin(), families.end(), word) == families.end())
-					//{				
-						//cout << word << endl;
+					string word = families[u];
+					//cout << "Strict word " << word << endl;
+	 	  			for (int v=1; v < static_cast<int> (word.length()-1); v++) 
+					{
+						char x = word[v];
+						word[v] = 'N';
 						families.push_back(word);
-		    	//}
-		    	//cout << word << endl;
-		    	word[v] = x;
-		    }
-		  }
-		  temp_n--;
-	  }
-	  end=clock();
-	  duration_create += (double)(end-start)/CLOCKS_PER_SEC;
-	  
-	  start=clock();
-	  for(int j=0; j < static_cast<int>(families.size()); j++)
-	  {    
-	  	string motif = families[j];
-	  	//cout << "\tScoring(" << motif << ")" << endl;
-			double ratio = create_family(motif,structure, model, list->order);
-			//cout << "Done Scoring" << endl;
-			if(ratio != 0)
-			{	
-	   		ratio_file << motif << "," << ratio << endl;
-	   		//cout << motif << "," << ratio << endl;
-	   	}
-	   	//cout << "Done with " << motif << endl;
+	    					word[v] = x;
+	    				}
+	  			}
+	  			temp_n--;
+  			}
+    			//end=clock();
+  			//duration_create += (double)(end-start)/CLOCKS_PER_SEC;
+  
+  			//start=clock();
+  			for(int l=0; l < static_cast<int>(families.size()); l++)
+  			{    
+  				string motif = families[l];
+  				//cout << "\tScoring(" << motif << ")" << endl;
+				double ratio = create_family(motif,structure, model, list->order);
+				//cout << "Done Scoring" << endl;
+				if(ratio != 0)
+				{
+					#pragma omp critical
+					{
+	   					ratio_file << motif << "," << ratio << endl;
+	   				}
+	   				//cout << motif << "," << ratio << endl;
+	   			}
+   				//cout << "Done with " << motif << endl;
+			}
+			//cout << "Done with Loop" << endl;
+			//end=clock();
+  	
+			//duration_covar += (double)(end-start)/CLOCKS_PER_SEC;
+  		}
+  		ratio_file.close();
+  		//cout << "Done Printing" << endl;
+  		fam_number += families.size();
   	}
-  	//cout << "Done with Loop" << endl;
-	  end=clock();
-	  
-	  duration_covar += (double)(end-start)/CLOCKS_PER_SEC;
-	  
-  	ratio_file.close();
-  	//cout << "Done Printing" << endl;
-  	fam_number += families.size();
-  }
-  cout << "Total number of Word Familes: " << fam_number << endl;
-  cout << "Get Next Word took          : " << duration_create << " seconds" << endl;
-  cout << "CoVariance took             : " << duration_covar  << " seconds" << endl;
+   	end=clock();
+  	duration_create += (double)(end-start)/CLOCKS_PER_SEC;
+  	cout << "Word Familying took " << duration_create << " seconds" << endl;
 }
 
 

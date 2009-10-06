@@ -318,20 +318,16 @@ vector<string> radix_trie::get_regex_matches(string regex)
 			for(int k=0; k<ALPH-1; k++)
 			{
 				temp[found] = Alphabet::alphabet->character(k);;
-				//cout << "TEMP " << temp << endl;
 				t1.push_back(temp);
 			}
 		}
 		else 
 		{
-			//cout << "Before TEMP " << temp << endl;
 			if(get_count(temp) != 0)
 			{
-				//cout << "Else TEMP " << temp << endl;
 				ret_vector.push_back(temp);
 			}
 		}
-
 	}
 	return ret_vector;
 }
