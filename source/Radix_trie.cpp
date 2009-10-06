@@ -389,7 +389,7 @@ int radix_trie::inc_count(string motif)
 {
 	if(list->n_filter)
 	{
-		int N_loc = motif.find_first_of("Nn");
+		int N_loc = motif.find_first_not_of("AaCcGgTt");
 		if(N_loc >= 0)
 			return (-1);
 	}
