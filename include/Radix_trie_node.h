@@ -23,8 +23,15 @@ Hoebeke, Finn Drablos, Geir Kjetil Sandve, Lee Nau, Xiaoyu Liang, Rami Alouran, 
 #include <time.h>
 #include <vector>
 
+#include "Alphabet.h"
+#include "DNAAlphabet.h"
+
 #ifndef KKURZ_RADIX_TRIE_NODE
 #define KKURZ_RADIX_TRIE_NODE
+
+using namespace rmes;
+
+#define ALPH (Alphabet::alphabet->size()+1)
 
 using namespace std;
 
