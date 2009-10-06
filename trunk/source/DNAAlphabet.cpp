@@ -30,7 +30,7 @@ namespace rmes {
   vector<string> DNAAlphabet::NucleotideChars = 
                                           DNAAlphabet::buildNucleotideVector();
 
-  string DNAAlphabet::InterruptChars("RrYyWwSsMmKkHhBbVvDdNn.Zz");
+  string DNAAlphabet::InterruptChars("RrYyWwSsMmKkHhBbVvDdNn.Zz ");
 
   char DNAAlphabet::JokerChar='n';
 
