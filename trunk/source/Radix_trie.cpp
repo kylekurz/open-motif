@@ -37,6 +37,12 @@ radix_trie::radix_trie()
 	root = NULL;
 }
 
+radix_trie::radix_trie(owef_args *from_input, int x)
+{
+	list = from_input;
+	root = NULL;
+}
+
 //standard destructor
 radix_trie::~radix_trie()
 {
@@ -304,32 +310,32 @@ int radix_trie::get_seqs(string motif)
 
 vector<string> radix_trie::get_regex_matches(string regex)
 {
-	//cout << regex << endl;
-	//regex = convert(regex);
-	vector<string> t1, ret_vector;
-	t1.push_back(regex);
-	while (!t1.empty()) 
-	{
-		string temp = t1.back();
-		t1.pop_back();
-		int found = temp.find_first_not_of("AaCcGgTt");
-		if(found != -1)
-		{
-			for(int k=0; k<ALPH-1; k++)
-			{
-				temp[found] = Alphabet::alphabet->character(k);;
-				t1.push_back(temp);
-			}
-		}
-		else 
-		{
-			if(get_count(temp) != 0)
-			{
-				ret_vector.push_back(temp);
-			}
-		}
-	}
-	return ret_vector;
+	  //cout << regex << endl;
+        //regex = convert(regex);
+        vector<string> t1, ret_vector;
+        t1.push_back(regex);
+        while (!t1.empty()) 
+        {
+                string temp = t1.back();
+                t1.pop_back();
+                int found = temp.find_first_not_of("AaCcGgTt");
+                if(found != -1)
+                {
+                        for(int k=0; k<ALPH-1; k++)
+                        {
+                                temp[found] = Alphabet::alphabet->character(k);;
+                                t1.push_back(temp);
+                        }
+                }
+                else 
+                {
+                        if(get_count(temp) != 0)
+                        {
+                                ret_vector.push_back(temp);
+                        }
+                }
+        }
+        return ret_vector;
 }
 
 //function to get the sequences from the input file
@@ -377,6 +383,27 @@ vector<string> radix_trie::get_seq_file()
 //
 //If not implemented by the data structure, throw (-1)
 //************************************************************
+
+int radix_trie::set_count(string motif, int count)
+{
+	string temp = motif;
+	char *t = &temp[0];
+	int l = temp.length();
+	return trie_set(root, t, l, count);
+}
+
+int radix_trie::trie_set(radix_trie_node *node, char *s, int length, int count)
+{	if (!node)
+		return (0);
+	if (length==0)
+	{
+		node->data = count;
+		return (node->data);
+	}
+	if(!node->branch)
+		return (0);
+	return trie_set (node->branch[locate_branch(*s)], s + 1, length-1, count);
+}
 
 //************************************************************
 //General Purpose Functions
