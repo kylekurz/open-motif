@@ -24,6 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "Rmes_model.h"
 
 #include <iostream>
+#include <omp.h>
 
 
 using namespace std;
@@ -32,6 +33,11 @@ using namespace rmes;
 rmes_model::rmes_model()
 {
 //no op
+}
+
+rmes_model::rmes_model(owef_args *input_list, data *structure, int x)
+{
+	list = input_list;
 }
 
 rmes_model::~rmes_model()
@@ -48,7 +54,6 @@ rmes_model::rmes_model(owef_args *input_list,data *structure)
         //******************************************************************
         int num_files = (list->maxlength - list->minlength)+1;
         //cout << "num files: " << num_files << endl;
-        double d1=0,d2=0;
         for(int i=0; i<num_files; i++){
 		string next_word;        
         	int order = list->order;
@@ -66,38 +71,32 @@ rmes_model::rmes_model(owef_args *input_list,data *structure)
                 stream_2 >> file_name;
                 ratio_file.open(file_name.c_str());
                 ratio_file << "Word,Word_Count,Expect,Variance,Ratio"<<endl;
-        	//cout<<"list num:"<<list->num_words[i+list->minlength-1]<<endl;
-        	clock_t start,end;
-        	double duration1,duration2;
         	
-        	for(int j=0; j<list->num_words[i+list->minlength-1]; j++){
-        		
-        		//scores *word = new scores;
-                        //get the next word from the data structure
-                        next_word = structure->get_next_word(i+list->minlength);
-                        start=clock();
+        	int threadID, totalThreads, j;
+    		totalThreads = 0;
+    		threadID = 0;
+    		
+        	#pragma omp parallel for default(none) shared(ratio_file, i, structure, order) private(j, threadID, next_word, expect, var, ratio)
+        	for(j=0; j<list->num_words[i+list->minlength-1]; j++)
+        	{
+        		#pragma omp critical
+        		{
+	        	        next_word = structure->get_next_word(i+list->minlength);
+			}
                         expect = condAsExpect(next_word,order,structure);
-                        end=clock();
-                        duration1 = (double)(end-start)/CLOCKS_PER_SEC;
-                        d1=d1+duration1;
-                      
                         
-                        start=clock();
                         var=condAsVar(next_word,order,structure);
-                        end=clock();
-                        duration2 = (double)(end-start)/CLOCKS_PER_SEC;
-                        d2=d2+duration2;
                         
                         ratio = compute_ratio(expect, var, structure->get_count(next_word));
-                        ratio_file<<next_word<<","<<structure->get_count(next_word)<<","<<expect<<","<<var<<","<<ratio<<endl;
-                        //cout<<"after ratio call Word:"<<next_word<<" Expect:"<< expect<<" Var:"<<var<<" Word_count:"<< structure->get_count(next_word)<<" Ratio:"<<ratio<<endl;
-                        //compute the scores for that word
-                        //compute_scores(word, next_word, structure, order);
-        		
+                        
+                        #pragma omp critical
+                        {
+	                        ratio_file<<next_word<<","<<structure->get_count(next_word)<<","<<expect<<","<<var<<","<<ratio<<endl;
+	                }
                 }
                 ratio_file.close();
         }
-        printf("condAsExpect(s) took:%f condAsVar(s):%f\n",d1,d2);
+        //printf("condAsExpect(s) took:%f condAsVar(s):%f\n",d1,d2);
 	structure->reset();
 }
 

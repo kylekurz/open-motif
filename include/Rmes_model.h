@@ -51,6 +51,8 @@ class rmes_model :  public word_scoring
 	public:
 	    	//constructor
 	    	rmes_model();
+	    	//boring constructor
+	    	rmes_model(owef_args *input_list, data *structure, int x);
 	    	//initialized constructor
 	      	rmes_model(owef_args *input_list,data *structure);
 	    	//destructor
