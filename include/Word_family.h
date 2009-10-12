@@ -36,6 +36,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "Word.h"
 #include "Data_structure.h"
 #include "OWEF_args.h"
+#include "Radix_trie.h"
 #include "Scores.h"
 #include "Word_scoring.h"
 

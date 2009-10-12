@@ -100,9 +100,9 @@ word_family::word_family(owef_args *input_list,data *structure, word_scoring *mo
     		int threadID, totalThreads, j;
     		totalThreads = 0;
     		threadID = 0;
-    
+    		radix_trie *family_structure = new radix_trie(list, 1);
 
-    		#pragma omp parallel for default(none) shared(ratio_file, i, structure, model) private(j, threadID, families)
+    		#pragma omp parallel for default(none) shared(ratio_file, i, structure, model, family_structure) private(j, threadID, families)
 		for(j=0; j < i+list->num_words[list->minlength-1]; j++)
 		{
 			string next_word;
@@ -123,23 +123,22 @@ word_family::word_family(owef_args *input_list,data *structure, word_scoring *mo
 					{
 						string copy = next_word;
 						copy.replace(k, l+1, l+1, 'N');
-						families.push_back(copy);
+						//printf("%s\n", copy.c_str());
+						if(family_structure->get_count(copy) == 0)
+						{
+							family_structure->inc_count(copy);
+							double ratio = create_family(copy, structure, model, list->order);
+							if(ratio != 0)
+							{
+								#pragma omp critical
+								{
+									ratio_file << copy << "," << ratio << endl;
+								}
+							}
+						}
 					}
     				}
     			}
-  			for(int l=0; l < static_cast<int>(families.size()); l++)
-  			{    
-  				string motif = families[l];
-				double ratio = create_family(motif,structure, model, list->order);
-				if(ratio != 0)
-				{
-					#pragma omp critical
-					{
-	   					ratio_file << motif << "," << ratio << endl;
-	   				}
-	   			}
-			}
-			families.clear();
   		}
   		ratio_file.close();
   		fam_number += families.size();
@@ -171,8 +170,10 @@ double word_family::create_family(string w,data *structure, word_scoring *model,
 				
 				expect += t->expect;
 				var += t->variance;
-				count += structure->get_count(temp[i]);
-				
+				int tmp = structure->get_count(temp[i]);
+				if(tmp < 0)
+					tmp = 0 - tmp;
+				count += tmp;
 				for(int j=i+1; j < static_cast<int>(temp.size()); j++)
 				{
 					scores *s = new scores;

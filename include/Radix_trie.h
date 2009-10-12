@@ -42,6 +42,9 @@ class radix_trie : public data
 		//standard constructor
 		radix_trie();
 		
+		//empty constructor
+		radix_trie(owef_args *from_input, int x);
+		
 		//initialized constructor
 		radix_trie(owef_args *from_input);
 		
@@ -76,7 +79,10 @@ class radix_trie : public data
 		//Modifiers
 		//All modifiers return their new value by default.
 		//************************************************************
-				
+		int set_count(string motif, int count);
+		int trie_set(radix_trie_node *node, char *s, int length, int count);
+		//function to increment count
+		int inc_count(string motif);		
 		
 	private:
 		
@@ -86,8 +92,7 @@ class radix_trie : public data
 		//for each data structure incorporated.
 		//************************************************************
 		
-		//function to increment count
-		int inc_count(string motif);
+		
 		//function to increment seqs
 		int inc_seqs(string motif);
 		//function to count all the words (called from the constructor)
