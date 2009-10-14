@@ -53,7 +53,6 @@ rmes_model::rmes_model(owef_args *input_list,data *structure)
         //score all the words
         //******************************************************************
         int num_files = (list->maxlength - list->minlength)+1;
-        //cout << "num files: " << num_files << endl;
         for(int i=0; i<num_files; i++){
 		string next_word;        
         	int order = list->order;
@@ -96,7 +95,6 @@ rmes_model::rmes_model(owef_args *input_list,data *structure)
                 }
                 ratio_file.close();
         }
-        //printf("condAsExpect(s) took:%f condAsVar(s):%f\n",d1,d2);
 	structure->reset();
 }
 
@@ -143,7 +141,6 @@ double rmes_model::condAsExpect(const Word &w, const short m, data *structure) {
 //*compute condAsVar with data*structure instead of Counter
 
 double rmes_model::condAsVar(const Word &w, const short m, data *structure) {
-    //	cout << "Word " << w << endl;
     double var = 0.0;
     double SeqCount = 0.0;
     double WordCount = 0.0;
@@ -174,21 +171,10 @@ double rmes_model::condAsVar(const Word &w, const short m, data *structure) {
 
                     known_subwords.push_back(sw);
 
-                    //cout << "Subword " << sw << " Count " << structure->get_count(sw) << endl;
-                    //cout << "\t" << sw << endl;
-                    /*
-                    vector<string> v;
-                    v.push_back("a");
-                    v.push_back("c");
-                    v.push_back("g");                  
-                    v.push_back("t");
-                    */
-
                     vector<string> v;                   
                     string tmp="";
-                    for (long baseIndex=0;baseIndex<Alphabet::alphabet->size(); baseIndex++){                       
-                        //cout<<"char:"<<Alphabet::alphabet->character(baseIndex)<<" baseIndex:"<<baseIndex<<endl;
-                        tmp=Alphabet::alphabet->character(baseIndex);
+                    for (long baseIndex=0;baseIndex<Alphabet::alphabet->size(); baseIndex++){
+			tmp = 'A' + reverse_branch[baseIndex];
                         v.push_back(tmp);
                     }
                     for (int j = 0; j < Alphabet::alphabet->size(); j++) {
@@ -197,7 +183,6 @@ double rmes_model::condAsVar(const Word &w, const short m, data *structure) {
                         q1 += count;
 
                         if (flag == 0) {
-                            //							cout << temp << count << endl;
                             SeqCount += count;
                         }
 
@@ -206,7 +191,6 @@ double rmes_model::condAsVar(const Word &w, const short m, data *structure) {
 
                             for (int p = 0; p<static_cast<int> (word_1.length() - m); p++) {
                                 string psub = word_1.substr(p, m + 1);
-                                //cout << psub << " " << temp << endl;
 
                                 if (psub.compare(temp) == 0) {
                                     q2++;
@@ -227,9 +211,6 @@ double rmes_model::condAsVar(const Word &w, const short m, data *structure) {
             }
         }
     }
-
-//	cout << SeqCount << " " << WordCount << endl;
-
         var += (1.0 - 2.0 * double(WordCount)) / double (SeqCount);
         var *= expect * expect;
         var += expect;
@@ -240,9 +221,6 @@ double rmes_model::condAsVar(const Word &w, const short m, data *structure) {
             if (overlapWord.get())
                 var += 2.0 * condAsExpect(*overlapWord.get(), m, structure);
         }
-        
-//	cout << w << "\t" << var << "\t" << endl;
-
     	return var;
 
 }
@@ -250,7 +228,6 @@ double rmes_model::condAsVar(const Word &w, const short m, data *structure) {
 //compute the ratio of (N-E)/sqrt(v) where N is the count of word in the sequence
 double rmes_model::compute_ratio(double expect,double variance,int word_count)
 {
-    //std::cout<<endl<<"In compute ratio";
     double ratio=0.0;
     ratio = ((double)word_count - expect) / std::sqrt(variance);
     return ratio;
@@ -260,59 +237,6 @@ double rmes_model::compute_ratio(double expect,double variance,int word_count)
 double rmes_model::condAsVar(const Word &w, const short m, const Counter &cc)
 {
   throw(-1);
-    /*
-    Counter &c = const_cast<Counter &> (cc);
-    double var = 0.0;
-    Counter subWordCounter(m + 1, m + 1);
-
-    double expect = condAsExpect(w, m, c);
-    if (expect != 0.0) {
-        Counter subWordCounter(m + 1, m + 1);
-        subWordCounter.countWords(w);
-
-        for (long wordIndex = 0; wordIndex < c.numWords(m + 1) / Alphabet::alphabet->factor(); wordIndex++) {
-            double q1 = 0.0;
-            for (long baseIndex = 0; baseIndex < Alphabet::alphabet->size(); baseIndex++) {
-                q1 += double(c.wordCount(m + 1, Alphabet::alphabet->factor() * wordIndex + baseIndex));
-            }
-            if (q1 > 0.0) {
-                double q2 = 0;
-                for (long baseIndex = 0; baseIndex < Alphabet::alphabet->size(); baseIndex++) {
-                    q2 += double(subWordCounter.wordCount(m + 1, Alphabet::alphabet->factor() * wordIndex + baseIndex));
-                }
-                var += (q2 * q2) / q1;
-                for (long baseIndex = 0; baseIndex < Alphabet::alphabet->size(); baseIndex++) {
-                    long neighborIndex = Alphabet::alphabet->factor() * wordIndex + baseIndex;
-                    if (c.wordCount(m + 1, neighborIndex) > 0) {
-                        var -= double(subWordCounter.wordCount(m + 1, neighborIndex) * subWordCounter.wordCount(m + 1, neighborIndex)) / double(c.wordCount(m + 1, neighborIndex));
-                    }
-                }
-            }
-        }
-
-        long firstIndex = w.substring(0, m - 1);
-        long seqCounts = 0;
-        long wordCounts = 0;
-
-        for (int baseIndex = 0; baseIndex < Alphabet::alphabet->size(); baseIndex++) {
-            seqCounts += c.wordCount(m + 1, Alphabet::alphabet->factor() * firstIndex + baseIndex);
-            wordCounts += subWordCounter.wordCount(m + 1, Alphabet::alphabet->factor() * firstIndex + baseIndex);
-        }
-
-        var += (1.0 - 2.0 * double(wordCounts)) / double (seqCounts);
-        var *= expect * expect;
-        var += expect;
-
-        for (long d = 1; d < w.length() - m; d++) {
-            auto_ptr<Word> overlapWord(w.overlaps(d));
-            if (overlapWord.get())
-                var += 2.0 * condAsExpect(*overlapWord.get(), m, c);
-        }
-    }
-
-    return var;*/
-    
-
 }
  
 //function to compute all scores of a word

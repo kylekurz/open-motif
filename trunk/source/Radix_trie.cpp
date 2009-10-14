@@ -98,6 +98,8 @@ void* listener(void *_Object)
 //initialized radix trie
 radix_trie::radix_trie(owef_args *from_input)
 {	
+	//branch_array = {0,4,1,4,4,4,2,4,4,4,4,4,4,4,4,4,4,4,4,3,4,4,4,4,4,4};
+
 	#ifdef KKURZ_MPI
 	// create new thread for listener, which will wait for requests
 	pthread_t listen_thread;
@@ -1004,7 +1006,8 @@ void radix_trie::count_words()
 int radix_trie::locate_branch(char x)
 {
 	int branch_index = -1;
-	branch_index = Alphabet::alphabet->base(x);
+	x = toupper(x);
+	branch_index = branch_array[x - 'A'];
 	///cout << "Returning branch index: " << branch_index << endl;
 	return branch_index;
 }
