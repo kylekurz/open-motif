@@ -79,7 +79,7 @@ word_family::word_family(owef_args *input_list,data *structure, word_scoring *mo
 	 
  //   	clock_t start,end;
   	//double duration_covar  = 0.0;
-	double duration_create = 0.0;
+//	double duration_create = 0.0;
 	
 	int num_files = (list->maxlength - list->minlength)+1;
 	int fam_number = 0;
