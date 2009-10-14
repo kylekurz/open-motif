@@ -179,17 +179,12 @@ double word_family::create_family(string w,data *structure, word_scoring *model,
 					scores *s = new scores;
 					model->compute_scores(s, temp[j], structure, order);
 					double temp_covar = condAsCoVar(temp[i],temp[j],order,structure,t,s, model);
-					//cout << temp[i] << " " << temp[j] << " " << temp_covar << " " << t->expect << " " << s->expect << endl;
 					covar += temp_covar;
 				}				
 			}
 			
 			var += covar;
-			//if(var < 0)
-			//{
-				//cout << "Word " << w << " Var " << var << " Expect " << expect << " Covar " << covar << endl;
-				ratio = (count - expect) / std::sqrt(var); // Needs to be (O - E) / sqrt(V)
-			//}
+			ratio = (count - expect) / std::sqrt(var); // Needs to be (O - E) / sqrt(V)
 		}
   }
 	return ratio;
@@ -197,8 +192,8 @@ double word_family::create_family(string w,data *structure, word_scoring *model,
 
 double word_family::condAsCoVar(string w1, string w2, int m, data *structure, scores *t, scores *s, word_scoring *model)
 {
-  Word word1 = w1;
-  Word word2 = w2;
+	Word word1 = w1;
+  	Word word2 = w2;
 	if(word1.number() > word2.number())
 	{
 		string temp = w1;
@@ -206,49 +201,42 @@ double word_family::condAsCoVar(string w1, string w2, int m, data *structure, sc
 		w2 = temp;
 	}
 	//cout << "W1: " << w1 << " W2 " << w2 << endl;
-  double covar=0.0;
+	double covar=0.0;
   
-  if (w1.compare(w2) == 0) 
-  {
-    covar=t->variance;
-  } 
-  else 
-  {
-    double expectW1=t->expect;
-    double expectW2=s->expect;
+  	if (w1.compare(w2) == 0) 
+		covar=t->variance;
+  	else 
+  	{
+    		double expectW1=t->expect;
+    		double expectW2=s->expect;
   	
-    if (expectW1 != 0.0 && expectW2 != 0.0) 
-    {
-    	vector<string> known_words;
+    		if (expectW1 != 0.0 && expectW2 != 0.0) 
+    		{
+    			vector<string> known_words;
 			vector<string> v;                   
-      string tmp="";
-      for (long baseIndex=0;baseIndex<Alphabet::alphabet->size(); baseIndex++)
-      {      
-          tmp=toupper(Alphabet::alphabet->character(baseIndex));
-          v.push_back(tmp);
-      }
+      			string tmp="";
+      			for (long baseIndex=0;baseIndex<Alphabet::alphabet->size(); baseIndex++)
+      			{      
+          			tmp=toupper(Alphabet::alphabet->character(baseIndex));
+          			v.push_back(tmp);
+      			}
                     
-      for (int i = 0; i<static_cast<int> (w1.length() - m); i++) 
-      {      	
+      			for (int i = 0; i<static_cast<int> (w1.length() - m); i++) 
+      			{      	
 				string sub1 = w1.substr(i, m + 1);
 				if (find(known_words.begin(), known_words.end(), sub1) == known_words.end() && w2.find(sub1)!=string::npos) 
-				{
-        	known_words.push_back(sub1);
-        }
-      
-	      string sub2 = w2.substr(i, m + 1);
+			        	known_words.push_back(sub1);
+    
+        			string sub2 = w2.substr(i, m + 1);
 				if (find(known_words.begin(), known_words.end(), sub2) == known_words.end() && w1.find(sub2)!=string::npos) 
-				{
-	        known_words.push_back(sub2);
-	      }
-      }
-			
-			for(int i=0; i < static_cast<int>(known_words.size()); i++)
-			{
+				        known_words.push_back(sub2);
+      			}
+      			for(int i=0; i < static_cast<int>(known_words.size()); i++)
+      			{
 				string word = known_words[i];				
 				int cw1 = 0;
 				int cw2 = 0;
-				
+	
 				int strict_cw1 = 0;
 				int strict_cw2 = 0;
 				
@@ -261,109 +249,83 @@ double word_family::condAsCoVar(string w1, string w2, int m, data *structure, sc
 					temp.append(v[j]);
 					q1 += structure->get_count(temp);
 					for (int i = 0; i<static_cast<int> (w1.length() - m); i++) 
-      		{ 
+			      		{ 
 						string sub1 = w1.substr(i, m + 1);
 						if (sub1.compare(temp) == 0)
-						{
 							cw1++;
-						}
 						if (sub1.compare(word) == 0)
-						{
 							strict_cw1++;
-						}
 						
 						string sub2 = w2.substr(i, m + 1);
 						if (sub2.compare(temp) == 0)
-						{
 							cw2++;
-						}
 						if (sub2.compare(word) == 0)
-						{
 							strict_cw2++;
-						}
 					}
-
 				}				
 				covar += ((double)cw1*(double)cw2) / (double)q1;
-				
-				covar -= ((double)(strict_cw1 / 4) * (double)(strict_cw2 / 4)) / (double) structure->get_count(word);
-      }
-      
-      double countW2Seq = 0.0;
-      double countW2W1  = 0.0;
-      double countW1Seq = 0.0;
-      double countW1W2  = 0.0;
 			
-      for (long baseIndex=0;baseIndex<Alphabet::alphabet->size();baseIndex++) 
-      {
-      	string temp1 = w1.substr(0,m);
-      	string temp2 = w2.substr(0,m);
+				covar -= ((double)(strict_cw1 / 4) * (double)(strict_cw2 / 4)) / (double) structure->get_count(word);
+			}
+			      
+			double countW2Seq = 0.0;
+			double countW2W1  = 0.0;
+			double countW1Seq = 0.0;
+			double countW1W2  = 0.0;
+			
+      			for (long baseIndex=0;baseIndex<Alphabet::alphabet->size();baseIndex++) 
+      			{
+      				string temp1 = w1.substr(0,m);
+      				string temp2 = w2.substr(0,m);
+      		
+      				temp1.append(v[baseIndex]);
+      				temp2.append(v[baseIndex]);
       	
-      	temp1.append(v[baseIndex]);
-      	temp2.append(v[baseIndex]);
-      	
-      	for (int i = 0; i<static_cast<int> (w1.length() - m); i++) 
-    		{ 
+      				for (int i = 0; i<static_cast<int> (w1.length() - m); i++) 
+    				{ 
 					string sub1 = w2.substr(i, m + 1);
 					if (sub1.compare(temp1) == 0)
-					{
 						countW2W1++;
-					}
 					
 					string sub2 = w1.substr(i, m + 1);
 					if (sub2.compare(temp2) == 0)
-					{
 						countW1W2++;
-					}
 				}
       	      	
-        countW1Seq+=structure->get_count(temp1);
-        //cout << "temp2:" << temp2 << endl;
-        countW2Seq+=structure->get_count(temp2);
-      }
+        			countW1Seq+=structure->get_count(temp1);
+        			countW2Seq+=structure->get_count(temp2);
+      			}
 
 			covar -= countW2W1 / countW1Seq; //Checked and count W1Seq is right
 			covar -= countW1W2 / countW2Seq; //Checked and it is the same as countW2W1 / countW1Seq when the seqs are inverted
 
-      if (w1.substr(0,m).compare(w2.substr(0,m)) == 0)
-      {
-        covar += 1.0 / countW1Seq;
-			}
+      			if (w1.substr(0,m).compare(w2.substr(0,m)) == 0)
+			        covar += 1.0 / countW1Seq;
 			
-      covar *= expectW1 * expectW2;
+      			covar *= expectW1 * expectW2;
 
-      Word word1 = w1;
-      Word word2 = w2;
+      			Word word1 = w1;
+      			Word word2 = w2;
 			
-      for (int d = m + 1 - (int)w1.length() ; d < (int)w1.length()-m ; d++) 
-      {
-	  		auto_ptr<Word> overlapWord(word1.overlaps(word2,d));
-	  		if (overlapWord.get())
-	  		{
-	  			scores *u = new scores;
+      			for (int d = m + 1 - (int)w1.length() ; d < (int)w1.length()-m ; d++) 
+      			{
+		  		auto_ptr<Word> overlapWord(word1.overlaps(word2,d));
+		  		if (overlapWord.get())
+		  		{
+		  			scores *u = new scores;
 	  			
-	  			std::stringstream stream_1;
-			    string overlap;
-			    stream_1.clear();
-			    stream_1 << Word(*overlapWord.get());
-			    stream_1 >> overlap;
+		  			std::stringstream stream_1;
+			    		string overlap;
+			    		stream_1.clear();
+			    		stream_1 << Word(*overlapWord.get());
+			    		stream_1 >> overlap;
 			    
 					model->compute_scores(u, overlap, structure, m);
-	    		covar += u->expect;
-	    	}
-      }
-    }
-  }
-  //cout << w1 << " vs " << w2 << " Covar " << covar << endl;	
-  return covar;
+	    				covar += u->expect;
+	    			}
+      			}
+    		}
+  	}
+	return covar;
 }
-
-
-
-
-
-
-
-
-
 
