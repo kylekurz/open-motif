@@ -77,13 +77,13 @@ word_family::word_family(owef_args *input_list,data *structure, word_scoring *mo
 	//int nprocs = omp_get_num_procs();
 	//cout << "number of processors: " << nprocs << endl;
 	 
-    	clock_t start,end;
+ //   	clock_t start,end;
   	//double duration_covar  = 0.0;
 	double duration_create = 0.0;
 	
 	int num_files = (list->maxlength - list->minlength)+1;
 	int fam_number = 0;
-	start=clock();
+//	start=clock();
 	for(int i=0; i<num_files; i++)
 	{
 		stringstream stream_2;
@@ -143,9 +143,9 @@ word_family::word_family(owef_args *input_list,data *structure, word_scoring *mo
   		ratio_file.close();
   		fam_number += families.size();
   	}
-   	end=clock();
-  	duration_create += (double)(end-start)/CLOCKS_PER_SEC;
-  	cout << "Word Familying took " << duration_create << " seconds" << endl;
+   //	end=clock();
+  	//duration_create += (double)(end-start)/CLOCKS_PER_SEC;
+  //	cout << "Word Familying took " << duration_create << " seconds" << endl;
 }
 
 
