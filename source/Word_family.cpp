@@ -114,8 +114,7 @@ word_family::word_family(owef_args *input_list,data *structure, word_scoring *mo
 			int temp_n = list->no_n;
 			if(list->no_n - i+list->minlength < 2)
   				temp_n = list->no_n - i+list->minlength;
-  			
-    			for (int k=1; k<static_cast<int> (next_word.length()-1); k++) 
+      			for (int k=1; k<static_cast<int> (next_word.length()-1); k++) 
 			{
 				for(int l=0; l<temp_n; l++)
 				{
@@ -143,14 +142,12 @@ word_family::word_family(owef_args *input_list,data *structure, word_scoring *mo
   		ratio_file.close();
   		fam_number += families.size();
   	}
-   //	end=clock();
-  	//duration_create += (double)(end-start)/CLOCKS_PER_SEC;
-  //	cout << "Word Familying took " << duration_create << " seconds" << endl;
 }
 
 
 double word_family::create_family(string w,data *structure, word_scoring *model, int order) 
 {
+	//cout << "creating family " << w << endl;
 	double ratio = 0;
 	
 	if(w.length() > 2)
@@ -160,13 +157,20 @@ double word_family::create_family(string w,data *structure, word_scoring *model,
 		double covar = 0;
 		double count = 0;
 		vector<string> temp = structure->get_regex_matches(w);
-		
+		//cout << "got matches " << temp.size() << endl;
 		if(static_cast<int>(temp.size() > 1))
 		{
 			for(int i=0; i < static_cast<int>(temp.size()); i++)
 			{
-				scores *t = new scores;
-				model->compute_scores(t, temp[i], structure, order);			
+				scores *t = NULL;
+				t = structure->get_stats(temp[i]);
+				if(t == NULL || t->expect == -1 || t->variance == -1)
+				{
+					model->compute_scores(t, temp[i], structure, order);
+					structure->set_stats(temp[i], t);
+				}	
+				
+				
 				
 				expect += t->expect;
 				var += t->variance;
@@ -176,8 +180,13 @@ double word_family::create_family(string w,data *structure, word_scoring *model,
 				count += tmp;
 				for(int j=i+1; j < static_cast<int>(temp.size()); j++)
 				{
-					scores *s = new scores;
-					model->compute_scores(s, temp[j], structure, order);
+					scores *s = NULL;
+					s = structure->get_stats(temp[j]);
+					if(s == NULL || s->expect == -1 || s->variance == -1)
+					{
+						model->compute_scores(s, temp[j], structure, order);
+						structure->set_stats(temp[j], s);
+					}		
 					double temp_covar = condAsCoVar(temp[i],temp[j],order,structure,t,s, model);
 					covar += temp_covar;
 				}				

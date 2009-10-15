@@ -16,7 +16,7 @@ Hoebeke, Finn Drablos, Geir Kjetil Sandve, Lee Nau, Xiaoyu Liang, Rami Alouran, 
 #include "Alphabet.h"
 #include "Data_structure.h"
 #include "DNAAlphabet.h"
-#include "Radix_trie_node.h"
+#include "Radix_trie_leaf.h"
 
 #ifdef KKURZ_MPI
 #include <mpi.h>
@@ -60,6 +60,8 @@ class radix_trie : public data
 		int get_count(string motif);
 		//function to get sequence count
 		int get_seqs(string motif);
+		//function to get the statistics stored in a leaf node from the trie
+		scores* get_stats(string motif);
 		//function to return all words that match a regular expression
 		vector<string> get_regex_matches(string regex);
 		//function to get all of the sequences from the input file
@@ -79,10 +81,16 @@ class radix_trie : public data
 		//Modifiers
 		//All modifiers return their new value by default.
 		//************************************************************
+		//function to set count of a string
 		int set_count(string motif, int count);
+		//function to set the count in a trie member
 		int trie_set(radix_trie_node *node, char *s, int length, int count);
 		//function to increment count
-		int inc_count(string motif);		
+		int inc_count(string motif);	
+		//function to set the statistics of a word in the trie
+		int set_stats(string motif, scores *new_stats);
+		//function to set the statistics of a word in the trie
+		int trie_stats(radix_trie_node *node, char *s, int length, scores *new_stats);	
 		
 	private:
 		
@@ -110,7 +118,10 @@ class radix_trie : public data
 		void trie_add (radix_trie_node * &node, char *s, int length, int level);
 
 		//get the information about what is stored at a node
-		int trie_get (radix_trie_node * &node, char *s, int length);
+		int trie_get (radix_trie_node * &node, char *s, int length, int level);
+		
+		//get the stats from a leaf
+		scores* trie_find_stats (radix_trie_node * &node, char *s, int length);
 
 		//find a word in the trie
 		int trie_find (radix_trie_node * &node, char *s, int length);

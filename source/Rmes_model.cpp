@@ -60,8 +60,6 @@ rmes_model::rmes_model(owef_args *input_list,data *structure)
           		order = (i+list->minlength)-2;
         	if(order < 0)
           		order = 0;	
-        	double expect;
-                double var;
                 double ratio;
                 stringstream stream_2;
                 ofstream ratio_file;
@@ -75,22 +73,26 @@ rmes_model::rmes_model(owef_args *input_list,data *structure)
     		totalThreads = 0;
     		threadID = 0;
     		
-        	#pragma omp parallel for default(none) shared(ratio_file, i, structure, order) private(j, threadID, next_word, expect, var, ratio)
+        	#pragma omp parallel for default(none) shared(ratio_file, i, structure, order) private(j, threadID, next_word, ratio)
         	for(j=0; j<list->num_words[i+list->minlength-1]; j++)
         	{
         		#pragma omp critical
         		{
 	        	        next_word = structure->get_next_word(i+list->minlength);
 			}
-                        expect = condAsExpect(next_word,order,structure);
-                        
-                        var=condAsVar(next_word,order,structure);
-                        
-                        ratio = compute_ratio(expect, var, structure->get_count(next_word));
+			
+			scores *word = NULL;
+			word = structure->get_stats(next_word);
+			if(word == NULL || word->expect == -1 || word->variance == -1)
+			{
+				compute_scores(word, next_word, structure, order);
+				structure->set_stats(next_word, word);
+			}		
+                        ratio = compute_ratio(word->expect, word->variance, structure->get_count(next_word));
                         
                         #pragma omp critical
                         {
-	                        ratio_file<<next_word<<","<<structure->get_count(next_word)<<","<<expect<<","<<var<<","<<ratio<<endl;
+	                        ratio_file<<next_word<<","<<structure->get_count(next_word)<<","<<word->expect<<","<<word->variance<<","<<ratio<<endl;
 	                }
                 }
                 ratio_file.close();

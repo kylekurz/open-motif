@@ -80,6 +80,8 @@ class data
 		virtual int get_count(string motif)=0;
 		//function to get sequence count
 		virtual int get_seqs(string motif)=0;
+		//function to get the statistics for a word
+		virtual scores* get_stats(string motif)=0;
 		//function to return all words that match a regular expression
 		virtual vector<string> get_regex_matches(string regex)=0;
 		//function to get total count of a regex
@@ -92,6 +94,9 @@ class data
 		//All modifiers return their new value by default.  This may
 		//be ignored based on developer preference.
 		//************************************************************
+
+		//function to set the statistics of a word in the trie
+		virtual int set_stats(string motif, scores *new_stats)=0;
 		
 		//************************************************************
 		//General Purpose Functions
