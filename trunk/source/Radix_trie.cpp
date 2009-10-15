@@ -308,6 +308,15 @@ int radix_trie::get_seqs(string motif)
 	int l = temp.length();
 	return trie_find_s(root, t, l);
 }
+
+//function to get the stats from a word
+scores* radix_trie::get_stats(string motif)
+{
+	string temp = motif;
+	char *t = &temp[0];
+	int l = temp.length();
+	return trie_find_stats(root, t, l);
+}
 #endif
 
 vector<string> radix_trie::get_regex_matches(string regex)
@@ -395,7 +404,8 @@ int radix_trie::set_count(string motif, int count)
 }
 
 int radix_trie::trie_set(radix_trie_node *node, char *s, int length, int count)
-{	if (!node)
+{	
+	if (!node)
 		return (0);
 	if (length==0)
 	{
@@ -405,6 +415,31 @@ int radix_trie::trie_set(radix_trie_node *node, char *s, int length, int count)
 	if(!node->branch)
 		return (0);
 	return trie_set (node->branch[locate_branch(*s)], s + 1, length-1, count);
+}
+
+//function to set the statistics of a word in the trie
+int radix_trie::set_stats(string motif, scores *new_stats)
+{
+	string temp = motif;
+	char *t = &temp[0];
+	int l = temp.length();
+	return trie_stats(root, t, l, new_stats);
+}
+
+//function to set the statistics of a word in the trie
+int radix_trie::trie_stats(radix_trie_node *node, char *s, int length, scores *new_stats)
+{
+	if (!node)
+		return (0);
+	if (length==0)
+	{
+		((radix_trie_leaf *)node)->storage->expect = new_stats->expect;
+		((radix_trie_leaf *)node)->storage->variance = new_stats->variance;
+		return (node->data);
+	}
+	if(!node->branch)
+		return (0);
+	return trie_stats (node->branch[locate_branch(*s)], s + 1, length-1, new_stats);	
 }
 
 //************************************************************
@@ -430,7 +465,7 @@ int radix_trie::inc_count(string motif)
 	}
 	char *t = &motif[0];
 	int l = motif.length();
-	int retval = trie_get(root, t, l);
+	int retval = trie_get(root, t, l, l-1);
 	if(retval == -1)
 	{
 		trie_add(root, t, l, l-1);
@@ -445,7 +480,7 @@ int radix_trie::inc_seqs(string motif)
 {
 	char *t = &motif[0];
 	int l = motif.length();
-	int retval = trie_get(root, t, l);
+	int retval = trie_get(root, t, l, l-1);
 	if(retval == -1)
 	{
 		trie_add(root, t, l, l-1);
@@ -479,19 +514,29 @@ void radix_trie::trie_add (radix_trie_node *& node, char *s, int length, int lev
 				node->branch[i]=NULL;
 		}
 		if(!node->branch[idx])
-			node->branch[idx] = new radix_trie_node();
+		{
+			if(length > 1)
+				node->branch[idx] = new radix_trie_node();
+			if(length == 1)
+			{
+				node->branch[idx] = new radix_trie_leaf();
+				((radix_trie_leaf *)node->branch[idx])->storage = new scores;
+			}
+		}				
 		trie_add (node->branch[idx], s + 1, length-1, level);
 	}
 }
 
 //function to get the count of a word in the radix trie and increment it
-int radix_trie::trie_get (radix_trie_node * &node, char *s, int length)
+int radix_trie::trie_get (radix_trie_node * &node, char *s, int length, int level)
 		/* return data associated with string s, or NULL if not found */
 {
 	if(!node)
 		return (-1);
 	if (length==0)
 	{
+		if(node->data == 0)
+			list->num_words[level] = (list->num_words[level])+1;
 		if(node->last_seq != list->seq)
 		{
 			(node->num_seq)++;
@@ -504,7 +549,7 @@ int radix_trie::trie_get (radix_trie_node * &node, char *s, int length)
 	int idx = locate_branch(*s);
 	if(!node->branch[idx])
 		return (-1);
-	return trie_get (node->branch[idx], s + 1, length-1);
+	return trie_get (node->branch[idx], s + 1, length-1, level);
 }
 
 //function to get the count of a word in the radix trie (no increment)
@@ -518,6 +563,19 @@ int radix_trie::trie_find (radix_trie_node * &node, char *s, int length)
 	if(!node->branch)
 		return (0);
 	return trie_find (node->branch[locate_branch(*s)], s + 1, length-1);
+}
+
+//function to get the stats of a word in the radix trie (no increment)
+scores* radix_trie::trie_find_stats (radix_trie_node * &node, char *s, int length)
+		/* return data associated with string s, or NULL if not found */
+{
+	if (!node)
+		return (NULL);
+	if (length==0)
+		return ((radix_trie_leaf *)node)->storage;
+	if(!node->branch)
+		return (NULL);
+	return trie_find_stats (node->branch[locate_branch(*s)], s + 1, length-1);
 }
 
 //function to get the sequence count of a word in the radix trie (no increment)
@@ -971,7 +1029,7 @@ void radix_trie::count_words()
 			{
 			#endif
 				int length = min(static_cast<int>(tag.length())-i,list->maxlength);
-				for(int k=1; k<=length; k++)
+				for(int k=length; k>=1; k--)
 				{
 					string to_count = tag.substr(i, k);
 					inc_count(to_count);

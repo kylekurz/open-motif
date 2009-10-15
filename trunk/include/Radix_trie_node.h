@@ -25,6 +25,7 @@ Hoebeke, Finn Drablos, Geir Kjetil Sandve, Lee Nau, Xiaoyu Liang, Rami Alouran, 
 
 #include "Alphabet.h"
 #include "DNAAlphabet.h"
+#include "Scores.h"
 
 #ifndef KKURZ_RADIX_TRIE_NODE
 #define KKURZ_RADIX_TRIE_NODE
