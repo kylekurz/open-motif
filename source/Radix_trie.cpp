@@ -334,7 +334,7 @@ vector<string> radix_trie::get_regex_matches(string regex)
                 {
                         for(int k=0; k<ALPH-1; k++)
                         {
-                                temp[found] = Alphabet::alphabet->character(k);;
+                                temp[found] = 'A' + reverse_branch[k];
                                 t1.push_back(temp);
                         }
                 }
