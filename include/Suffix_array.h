@@ -25,7 +25,7 @@ class suffix_array : public data
 	void reset();
 
     private:
-	uint32_t *suffix_array;
+	uint32_t *SA;
 	uint32_t array_size;
 };
 
