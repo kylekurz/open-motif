@@ -321,8 +321,7 @@ scores* radix_trie::get_stats(string motif)
 
 vector<string> radix_trie::get_regex_matches(string regex)
 {
-	  //cout << regex << endl;
-        //regex = convert(regex);
+	//cout << "seed " << regex << endl;
         vector<string> t1, ret_vector;
         t1.push_back(regex);
         while (!t1.empty()) 
@@ -335,7 +334,10 @@ vector<string> radix_trie::get_regex_matches(string regex)
                         for(int k=0; k<ALPH-1; k++)
                         {
                                 temp[found] = 'A' + reverse_branch[k];
-                                t1.push_back(temp);
+        			//int test = get_count(temp.substr(0,found+1));
+        			//cout << test << " " << temp << " " << temp.substr(0,found+1) << endl;
+                                if(get_count(temp.substr(0,found+1)) > 0)
+	                                t1.push_back(temp);
                         }
                 }
                 else 
@@ -346,6 +348,8 @@ vector<string> radix_trie::get_regex_matches(string regex)
                         }
                 }
         }
+ /*       for(int i=0; i<static_cast<int>(ret_vector.size()); i++)
+        	cout << ret_vector[i] << endl;*/
         return ret_vector;
 }
 
@@ -1014,8 +1018,10 @@ void radix_trie::count_words()
 	//******************************************************************
 	
 	vector<string> seqs = get_seq_file();
+	int h;
 	
-	for(int h=0; h<static_cast<int>(seqs.size()); h++)
+	#pragma omp parallel for default(none) shared(seqs) private(h)
+	for(h=0; h<static_cast<int>(seqs.size()); h++)
 	{
 		string tag;
 		#ifdef KKURZ_MPI
@@ -1040,7 +1046,10 @@ void radix_trie::count_words()
 				for(int k=length; k>=1; k--)
 				{
 					string to_count = tag.substr(i, k);
-					inc_count(to_count);
+					#pragma omp critical
+					{
+						inc_count(to_count);
+					}
 				}
 			#ifdef KKURZ_MPI
 			}
