@@ -1020,7 +1020,6 @@ void radix_trie::count_words()
 	vector<string> seqs = get_seq_file();
 	int h;
 	
-	#pragma omp parallel for default(none) shared(seqs) private(h)
 	for(h=0; h<static_cast<int>(seqs.size()); h++)
 	{
 		string tag;
@@ -1046,10 +1045,7 @@ void radix_trie::count_words()
 				for(int k=length; k>=1; k--)
 				{
 					string to_count = tag.substr(i, k);
-					#pragma omp critical
-					{
 						inc_count(to_count);
-					}
 				}
 			#ifdef KKURZ_MPI
 			}
