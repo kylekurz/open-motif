@@ -106,15 +106,34 @@ word_family::word_family(owef_args *input_list,data *structure, word_scoring *mo
 		for(j=0; j < i+list->num_words[list->minlength-1]; j++)
 		{
 			string next_word;
-    			threadID = omp_get_thread_num();
+    			//threadID = omp_get_thread_num();
     			#pragma omp critical
     			{
 	    			next_word = structure->get_next_word(i+list->minlength);
 			}
-			int temp_n = list->no_n;
+			/*int temp_n = list->no_n;
 			if(list->no_n - i+list->minlength < 2)
   				temp_n = list->no_n - i+list->minlength;
-      			for (int k=1; k<static_cast<int> (next_word.length()-1); k++) 
+			*/
+			vector<string> family_list = structure->expand_family(next_word);
+			for (int k=0; k<static_cast<int>(family_list.size()); k++) 
+			{
+				if(family_structure->get_count(family_list[i]) == 0)
+				{
+					family_structure->inc_count(family_list[i]);
+					double ratio = create_family(family_list[i], structure, model, list->order);
+					if(ratio != 0)
+					{
+						#pragma omp critical
+						{
+							ratio_file << family_list[i] << "," << ratio << endl;
+						}
+					}
+				}
+			}
+			
+			/*
+			for (int k=1; k<static_cast<int> (next_word.length()-1); k++) 
 			{
 				for(int l=0; l<temp_n; l++)
 				{
@@ -138,6 +157,7 @@ word_family::word_family(owef_args *input_list,data *structure, word_scoring *mo
 					}
     				}
     			}
+			*/
   		}
   		ratio_file.close();
   		fam_number += families.size();
