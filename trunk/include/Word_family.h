@@ -26,6 +26,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <fstream>  
 #include <iostream> 
 #include <memory>
+#include <omp.h>
 #include <pthread.h>
 #include <stdlib.h> 
 #include <string.h> 
