@@ -76,6 +76,8 @@ class radix_trie : public data
 		void output();
 		//function to reset last_word variables
 		void reset();
+		//function to expand a word to the set of families
+		vector<string> expand_family(string word);
 		
 		//************************************************************
 		//Modifiers

@@ -88,6 +88,8 @@ class data
 		//virtual pair<string, int> get_regex_counts(string motif)=0;
 		//function to get the sequences from the input file
 		virtual vector<string> get_seq_file()=0;
+		//function to get the expanded list of words that match the family
+		virtual vector<string> expand_family(string motif)=0;
     
 		//************************************************************
 		//Modifiers

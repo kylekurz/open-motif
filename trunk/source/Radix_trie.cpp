@@ -442,6 +442,14 @@ int radix_trie::trie_stats(radix_trie_node *node, char *s, int length, scores *n
 	return trie_stats (node->branch[locate_branch(*s)], s + 1, length-1, new_stats);	
 }
 
+vector<string> radix_trie::expand_family(string motif)
+{
+	//do bounded breadth first search of the tree creating all sub-families of a word
+	vector<string> ret_vector;
+	
+	return ret_vector;
+}
+
 //************************************************************
 //General Purpose Functions
 //May do any number of operations, should still be implmented
