@@ -101,7 +101,7 @@ word_family::word_family(owef_args *input_list,data *structure, word_scoring *mo
     		threadID = 0;
     		radix_trie *family_structure = new radix_trie(list, 1);
 
-    		//#pragma omp parallel for default(none) shared(ratio_file, i, structure, model, family_structure) private(j, threadID, families)
+    		#pragma omp parallel for default(none) shared(ratio_file, i, structure, model, family_structure) private(j, threadID, families)
 		for(j=0; j < i+list->num_words[list->minlength-1]; j++)
 		{
 			string next_word;
@@ -109,6 +109,7 @@ word_family::word_family(owef_args *input_list,data *structure, word_scoring *mo
     			#pragma omp critical
     			{
 	    			next_word = structure->get_next_word(i+list->minlength);
+	    			//printf("%s\n",next_word.c_str());
 			}
 			int temp_n = list->no_n;
 			if(list->no_n - i+list->minlength < 2)
@@ -155,7 +156,11 @@ double word_family::create_family(string w,data *structure, word_scoring *model,
 		double var = 0;
 		double covar = 0;
 		double count = 0;
-		vector<string> temp = structure->get_regex_matches(w);
+		vector<string> temp;
+		#pragma omp critical
+		{
+			temp = structure->get_regex_matches(w);
+		}
 		//cout << "got matches " << temp.size() << endl;
 		if(static_cast<int>(temp.size() > 1))
 		{

@@ -131,6 +131,7 @@ radix_trie::radix_trie(owef_args *from_input)
 		last_ext.push_back(word);
 	}
 	next_branch = 0;
+	next_branch_iterator = 0;
 	
 	//count the words
 	count_words();
@@ -321,47 +322,58 @@ scores* radix_trie::get_stats(string motif)
 
 vector<string> radix_trie::get_regex_matches(string regex)
 {
-	//cout << "seed " << regex << endl;
-	vector<string> t1, ret_vector;
-	vector<int> pos_n;
-	int found = regex.find_first_not_of("AaCcGgTt");
-       	for(int i=0; i<static_cast<int>(regex.length()); i++)
-       	{
-       		if(regex[i] == 'N' || regex[i] == 'n')
-        		pos_n.push_back(1);
-        	else
-        		pos_n.push_back(0);
-        }
-        t1.push_back(regex.substr(0,found));
-        while (!t1.empty()) 
+	vector<string> ret_vector, t1;
+	radix_trie_node *tmp = root;
+	string temp = "";
+	for(int i=0; i<static_cast<int>(regex.length()); i++)
+	{
+		int nb = branch_array[regex[i]-'A'];
+		if(nb != ALPH-1)
+		{
+			temp += regex[i];
+			tmp = tmp->branch[nb];
+		}
+		else
+		{
+			int num_n = 1;
+			int pos = i;
+			while(branch_array[regex[++pos] - 'A'] == ALPH-1)
+				num_n++;
+			//cout << pos << " " << num_n << endl;
+			string partial = get_next_word(tmp, num_n);
+			//cout << partial << endl;
+			while(partial.compare("") != 0)
+			{
+				string t2 = temp + partial;
+				//cout << t2 << endl;
+				t1.push_back(t2);
+				t2.clear();
+				partial.clear();
+				partial = get_next_word(tmp, num_n);
+			}
+			i = regex.length()+1;
+			tmp = NULL;
+			reset_iterator();
+			next_branch_iterator = 0;
+		}
+	}
+	while (!t1.empty())
         {
                 string temp = t1.back();
                 t1.pop_back();
                 if(temp.length() < regex.length())
                 {
-                	if(pos_n[temp.length()] == 1)
-                	{
-	                        for(int k=0; k<ALPH-1; k++)
-        	                {
-        	                	char t = 'A' + reverse_branch[k];
-        	                        string x = temp + t;
-        	                        if(get_count(x) > 0)
-		                                t1.push_back(x);
-        	                }
-        		}
-        		else
-        		{
-	                	temp += regex[temp.length()];
-        	        	if(get_count(temp) > 0)
-        	        		t1.push_back(temp);
-        	        }
+                	temp += regex[temp.length()];
+                        if(get_count(temp) > 0)
+                	        t1.push_back(temp);
                 }
-                else 
+                else
                 {
                         if(get_count(temp) != 0)
                                 ret_vector.push_back(temp);
                 }
         }
+        //cout << ret_vector.size() << endl;
         return ret_vector;
 }
 
@@ -696,6 +708,17 @@ void radix_trie::reset()
 	for (int j=0; j<static_cast<int> (last_loc.size()); j++) {
 		last_loc[j] = NULL;
 	}
+	
+}
+
+void radix_trie::reset_iterator()
+{
+	for (int i=0; i<static_cast<int> (last_word.size()); i++) {
+		last_ext[i] = "";
+	}
+	for (int j=0; j<static_cast<int> (last_loc.size()); j++) {
+		last_ext_loc[j] = NULL;
+	}
 }
 
 //systematically returns EVERY word stored in the trie at a given length.  It is the caller's responsibility
@@ -718,7 +741,7 @@ string radix_trie::get_next_word(int length)
 				if(node->branch && node->branch[next_branch]) 
 				{
 					///char x = conversion[next_branch];
-					char x = Alphabet::alphabet->character(next_branch);  // ljn 10/5/2009
+					char x = 'A' + reverse_branch[next_branch];  // ljn 10/5/2009
 					ret_word += x;
 					node = node->branch[next_branch];
 					next_branch = 0;
@@ -765,7 +788,7 @@ string radix_trie::get_next_word(int length)
 			if(node && node->branch && node->branch[next_branch]) 
 			{
 				///char x = conversion[next_branch];
-				char x = Alphabet::alphabet->character(next_branch);  // ljn 10/5/2009
+				char x = 'A' + reverse_branch[next_branch];  // ljn 10/5/2009
 				ret_word += x;
 				node = node->branch[next_branch];
 				next_branch = 0;
@@ -813,30 +836,30 @@ string radix_trie::get_next_word(radix_trie_node *temp_root, int length)
 			while(static_cast<int>(ret_word.length()) < length) 
 			{
 				//if we can keep following this branch
-				if(node->branch && node->branch[next_branch]) 
+				if(node->branch && node->branch[next_branch_iterator]) 
 				{
-					///char x = conversion[next_branch];
-					char x = Alphabet::alphabet->character(next_branch);  // ljn 10/5/2009
+					///char x = conversion[next_branch_iterator];
+					char x = 'A' + reverse_branch[next_branch_iterator];  // ljn 10/5/2009
 					ret_word += x;
-					node = node->branch[next_branch];
-					next_branch = 0;
+					node = node->branch[next_branch_iterator];
+					next_branch_iterator = 0;
 				}
 				//otherwise, gotta increment and look at the next branch
 				else 
 				{
-					next_branch++;
-					if (next_branch >= ALPH) {
-						while (next_branch >= ALPH) {
+					next_branch_iterator++;
+					if (next_branch_iterator >= ALPH) {
+						while (next_branch_iterator >= ALPH) {
 							char branch_id = ret_word[ret_word.length()-1];
 							ret_word = ret_word.substr(0, ret_word.length()-1);
-							next_branch = locate_branch(branch_id) + 1;
+							next_branch_iterator = locate_branch(branch_id) + 1;
 							node = temp_root;
 							for (int i=0; i<static_cast<int>(ret_word.length()); i++) {
 								if(node && node->branch && node->branch[locate_branch(ret_word[i])]) {
 									node = node->branch[locate_branch(ret_word[i])];
 								}
 							}
-							if(ret_word.length()==0 && next_branch >= ALPH)
+							if(ret_word.length()==0 && next_branch_iterator >= ALPH)
 							{
 								last_ext_loc[length-1] = NULL;
 								last_ext[length-1].clear();
@@ -856,7 +879,7 @@ string radix_trie::get_next_word(radix_trie_node *temp_root, int length)
 	else {
 		char branch_id = last_ext[length-1][last_ext[length-1].length()-1];
 		ret_word = last_ext[length-1].substr(0, last_ext[length-1].length()-1);
-		next_branch = locate_branch(branch_id) + 1;
+		next_branch_iterator = locate_branch(branch_id) + 1;
 		node = temp_root;
 		for (int i=0; i<static_cast<int>(ret_word.length()); i++) {
 			if(node && node->branch && node->branch[locate_branch(ret_word[i])]) {
@@ -867,31 +890,31 @@ string radix_trie::get_next_word(radix_trie_node *temp_root, int length)
 		while(static_cast<int>(ret_word.length()) < length) 
 		{
 			//if we can keep following this branch
-			if(node && node->branch && node->branch[next_branch]) 
+			if(node && node->branch && node->branch[next_branch_iterator]) 
 			{
-				///char x = conversion[next_branch];
-				char x = Alphabet::alphabet->character(next_branch);  // ljn 10/5/2009
+				///char x = conversion[next_branch_iterator];
+				char x = 'A' + reverse_branch[next_branch_iterator];  // ljn 10/5/2009
 				ret_word += x;
-				node = node->branch[next_branch];
-				next_branch = 0;
+				node = node->branch[next_branch_iterator];
+				next_branch_iterator = 0;
 			}
 			//otherwise, gotta increment and look at the next branch
 			else 
 			{
-				next_branch++;
-				if (next_branch >= ALPH) {
+				next_branch_iterator++;
+				if (next_branch_iterator >= ALPH) {
 					char branch_id;
-					while (next_branch >= ALPH) {
+					while (next_branch_iterator >= ALPH) {
 						branch_id = ret_word[ret_word.length()-1];					
 						ret_word = ret_word.substr(0, ret_word.length()-1);
-						next_branch = locate_branch(branch_id) + 1;
+						next_branch_iterator = locate_branch(branch_id) + 1;
 						node = temp_root;
 						for (int i=0; i<static_cast<int>(ret_word.length()); i++) {
 							if(node && node->branch && node->branch[locate_branch(ret_word[i])]) {
 								node = node->branch[locate_branch(ret_word[i])];
 							}
 						}
-						if(ret_word.compare("") == 0 && (next_branch >= ALPH || next_branch < 0))
+						if(ret_word.compare("") == 0 && (next_branch_iterator >= ALPH || next_branch_iterator < 0))
 						{
 							last_ext_loc[length-1] = NULL;
 							last_ext[length-1].clear();
