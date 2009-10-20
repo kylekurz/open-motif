@@ -322,6 +322,52 @@ scores* radix_trie::get_stats(string motif)
 vector<string> radix_trie::get_regex_matches(string regex)
 {
 	//cout << "seed " << regex << endl;
+	vector<string> t1, ret_vector;
+	vector<int> pos_n;
+	int found = regex.find_first_not_of("AaCcGgTt");
+       	for(int i=0; i<static_cast<int>(regex.length()); i++)
+       	{
+       		if(regex[i] == 'N' || regex[i] == 'n')
+        		pos_n.push_back(1);
+        	else
+        		pos_n.push_back(0);
+        }
+        t1.push_back(regex.substr(0,found));
+        while (!t1.empty()) 
+        {
+                string temp = t1.back();
+                t1.pop_back();
+                if(temp.length() < regex.length())
+                {
+                	if(pos_n[temp.length()] == 1)
+                	{
+	                        for(int k=0; k<ALPH-1; k++)
+        	                {
+        	                	char t = 'A' + reverse_branch[k];
+        	                        string x = temp + t;
+        	                        if(get_count(x) > 0)
+		                                t1.push_back(x);
+        	                }
+        		}
+        		else
+        		{
+	                	temp += regex[temp.length()];
+        	        	if(get_count(temp) > 0)
+        	        		t1.push_back(temp);
+        	        }
+                }
+                else 
+                {
+                        if(get_count(temp) != 0)
+                                ret_vector.push_back(temp);
+                }
+        }
+        return ret_vector;
+}
+
+/*
+vector<string> radix_trie::get_regex_matches(string regex)
+{
         vector<string> t1, ret_vector;
         t1.push_back(regex);
         while (!t1.empty()) 
@@ -334,8 +380,6 @@ vector<string> radix_trie::get_regex_matches(string regex)
                         for(int k=0; k<ALPH-1; k++)
                         {
                                 temp[found] = 'A' + reverse_branch[k];
-        			//int test = get_count(temp.substr(0,found+1));
-        			//cout << test << " " << temp << " " << temp.substr(0,found+1) << endl;
                                 if(get_count(temp.substr(0,found+1)) > 0)
 	                                t1.push_back(temp);
                         }
@@ -348,11 +392,9 @@ vector<string> radix_trie::get_regex_matches(string regex)
                         }
                 }
         }
- /*       for(int i=0; i<static_cast<int>(ret_vector.size()); i++)
-        	cout << ret_vector[i] << endl;*/
         return ret_vector;
 }
-
+*/
 //function to get the sequences from the input file
 vector<string> radix_trie::get_seq_file()
 {
