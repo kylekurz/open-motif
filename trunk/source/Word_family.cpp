@@ -24,7 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "Word_family.h"
 
-#define BLOCK_SIZE 50
+#define BLOCK_SIZE 500
 
 using namespace std;
 using namespace rmes;
@@ -108,6 +108,7 @@ word_family::word_family(owef_args *input_list,data *structure, word_scoring *mo
     		#pragma omp parallel for default(none) shared(ratio_file, i, structure, model, family_structure, num_blocks) private(j, threadID, families)
 		for(j=0; j <num_blocks; j++)
 		{
+			vector<double> ratios;
 			//printf("getting words\n");
 			vector<string> word_list;
     			//threadID = omp_get_thread_num();
@@ -141,7 +142,7 @@ word_family::word_family(owef_args *input_list,data *structure, word_scoring *mo
 									{
 										#pragma omp critical
 										{
-											ratio_file << copy << "," << ratio << endl;
+											ratio_file << copy << ',' << ratio << endl;
 										}
 									}
 								}

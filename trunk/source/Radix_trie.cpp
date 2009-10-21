@@ -335,6 +335,8 @@ vector<string> radix_trie::get_regex_matches(string regex)
 {
 	vector<string> ret_vector, t1;
 	radix_trie_node *tmp = root;
+	int num_calls = 0;
+	int num_n = 0;
 	string temp = "";
 	for(int i=0; i<static_cast<int>(regex.length()); i++)
 	{
@@ -346,12 +348,13 @@ vector<string> radix_trie::get_regex_matches(string regex)
 		}
 		else
 		{
-			int num_n = 1;
+			num_n = 1;
 			int pos = i;
 			while(branch_array[regex[++pos] - 'A'] == ALPH-1)
 				num_n++;
 			//cout << pos << " " << num_n << endl;
 			string partial = get_next_word(tmp, num_n);
+			num_calls++;
 			//cout << partial << endl;
 			while(partial.compare("") != 0)
 			{
@@ -361,6 +364,7 @@ vector<string> radix_trie::get_regex_matches(string regex)
 				t2.clear();
 				partial.clear();
 				partial = get_next_word(tmp, num_n);
+				num_calls++;
 			}
 			i = regex.length()+1;
 			tmp = NULL;
@@ -370,20 +374,76 @@ vector<string> radix_trie::get_regex_matches(string regex)
 	}
 	while (!t1.empty())
         {
-                string temp = t1.back();
+        	tmp = root;
+        	string temp = t1.back();
+        	t1.pop_back();
+        	for(int i=0; i<static_cast<int>(temp.length()); i++)
+		{
+			int nb = branch_array[temp[i]-'A'];
+			if(nb != ALPH-1)
+			{
+				tmp = tmp->branch[nb];
+			}
+			else
+			{
+				num_n = 1;
+				int pos = i;
+				while(branch_array[regex[++pos] - 'A'] == ALPH-1)
+					num_n++;
+				//cout << pos << " " << num_n << endl;
+				string partial = get_next_word(tmp, num_n);
+				num_calls++;
+				//cout << partial << endl;
+				while(partial.compare("") != 0)
+				{
+					string t2 = temp + partial;
+					//cout << t2 << endl;
+					t1.push_back(t2);
+					t2.clear();
+					partial.clear();
+					partial = get_next_word(tmp, num_n);
+					num_calls++;
+				}
+				i = regex.length()+1;
+				tmp = NULL;
+				reset_iterator(omp_get_thread_num());
+				next_branch_iterator[omp_get_thread_num()] = 0;
+			}
+		}
+		for(int j=temp.length(); j<static_cast<int>(regex.length()); j++)
+		{
+			int nb = branch_array[regex[j]-'A'];
+			if(nb != ALPH-1 && tmp->branch && tmp->branch[nb])
+			{
+				temp += regex[j];
+				tmp = tmp->branch[nb];
+				if(temp.length() == regex.length())
+					ret_vector.push_back(temp);
+			}
+			else
+			{
+				temp.clear();
+				j = regex.length();
+			}
+		}
+        
+               /* string temp = t1.back();
                 t1.pop_back();
                 if(temp.length() < regex.length())
                 {
                 	temp += regex[temp.length()];
-                        if(get_count(temp) > 0)
-                	        t1.push_back(temp);
+                	//num_calls++;
+                        //if(get_count(temp) > 0)
+                	t1.push_back(temp);
                 }
                 else
                 {
+                	//num_calls++;
                         if(get_count(temp) != 0)
                                 ret_vector.push_back(temp);
-                }
+                }*/
         }
+ //       cout << "seed " << regex << " num_calls " << num_calls << " full query " << pow(4,num_n) << endl;
         //cout << ret_vector.size() << endl;
         return ret_vector;
 }
