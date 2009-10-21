@@ -98,8 +98,6 @@ void* listener(void *_Object)
 //initialized radix trie
 radix_trie::radix_trie(owef_args *from_input)
 {	
-	//branch_array = {0,4,1,4,4,4,2,4,4,4,4,4,4,4,4,4,4,4,4,3,4,4,4,4,4,4};
-
 	#ifdef KKURZ_MPI
 	// create new thread for listener, which will wait for requests
 	pthread_t listen_thread;
@@ -123,12 +121,19 @@ radix_trie::radix_trie(owef_args *from_input)
 	start = clock();
 	radix_trie_node *temp = NULL;
 	string word = "";
-	for(int i=0; i<list->maxlength; i++)
+	for(int h=0; h<omp_get_num_procs(); h++)
 	{
-		last_loc.push_back(temp);
-		last_ext_loc.push_back(temp);
-		last_word.push_back(word);
-		last_ext.push_back(word);
+		vector<string> t1;
+		vector<radix_trie_node *> t2;
+		for(int i=0; i<list->maxlength; i++)
+		{
+			t1.push_back(word);
+			t2.push_back(temp);
+		}
+		last_word.push_back(t1);
+		last_ext.push_back(t1);
+		last_loc.push_back(t2);
+		last_ext_loc.push_back(t2);
 	}
 	next_branch = 0;
 	next_branch_iterator = 0;
@@ -228,7 +233,7 @@ radix_trie::radix_trie(owef_args *from_input)
 	#endif
 	if(!list->score)
 		output();
-	reset();
+	reset(omp_get_thread_num());
 }
 
 //************************************************************
@@ -353,7 +358,7 @@ vector<string> radix_trie::get_regex_matches(string regex)
 			}
 			i = regex.length()+1;
 			tmp = NULL;
-			reset_iterator();
+			reset_iterator(omp_get_thread_num());
 			next_branch_iterator = 0;
 		}
 	}
@@ -700,24 +705,24 @@ void radix_trie::output()
 	}
 }
 
-void radix_trie::reset()
+void radix_trie::reset(int thread)
 {
-	for (int i=0; i<static_cast<int> (last_word.size()); i++) {
-		last_word[i] = "";
+	for (int i=0; i<static_cast<int> (last_word[thread].size()); i++) {
+		last_word[thread][i] = "";
 	}
-	for (int j=0; j<static_cast<int> (last_loc.size()); j++) {
-		last_loc[j] = NULL;
+	for (int j=0; j<static_cast<int> (last_loc[thread].size()); j++) {
+		last_loc[thread][j] = NULL;
 	}
 	
 }
 
-void radix_trie::reset_iterator()
+void radix_trie::reset_iterator(int thread)
 {
-	for (int i=0; i<static_cast<int> (last_word.size()); i++) {
-		last_ext[i] = "";
+	for (int i=0; i<static_cast<int> (last_word[thread].size()); i++) {
+		last_ext[thread][i] = "";
 	}
-	for (int j=0; j<static_cast<int> (last_loc.size()); j++) {
-		last_ext_loc[j] = NULL;
+	for (int j=0; j<static_cast<int> (last_ext_loc[thread].size()); j++) {
+		last_ext_loc[thread][j] = NULL;
 	}
 }
 
@@ -728,7 +733,11 @@ string radix_trie::get_next_word(int length)
 	string ret_word = "";
 	radix_trie_node *node = NULL;
 	//if we haven't returned anything yet...
-	if(last_loc[length-1] == NULL && last_word[length-1].compare("") == 0) 
+/*	printf("thread %d\n", omp_get_thread_num());
+	printf("length %d\n", length-1);
+	printf("location %d\n", last_loc.size());
+	printf("word %d\n", last_word.size());*/
+	if(last_loc[omp_get_thread_num()][length-1] == NULL && last_word[omp_get_thread_num()][length-1].compare("") == 0) 
 	{
 		//if we have a trie here...
 		if(root && root->branch)	
@@ -765,15 +774,15 @@ string radix_trie::get_next_word(int length)
 					}
 				}
 			}
-			last_loc[length-1] = node;
-			last_word[length-1] = ret_word;
+			last_loc[omp_get_thread_num()][length-1] = node;
+			last_word[omp_get_thread_num()][length-1] = ret_word;
 			return ret_word;
 		}
 	}
 	//otherwise we have something and can start from there...
 	else {
-		char branch_id = last_word[length-1][last_word[length-1].length()-1];
-		ret_word = last_word[length-1].substr(0, last_word[length-1].length()-1);
+		char branch_id = last_word[omp_get_thread_num()][length-1][last_word[omp_get_thread_num()][length-1].length()-1];
+		ret_word = last_word[omp_get_thread_num()][length-1].substr(0, last_word[omp_get_thread_num()][length-1].length()-1);
 		next_branch = locate_branch(branch_id) + 1;
 		node = root;
 		for (int i=0; i<static_cast<int>(ret_word.length()); i++) {
@@ -814,8 +823,8 @@ string radix_trie::get_next_word(int length)
 			}
 		}
 	}	
-	last_loc[length-1] = node;
-	last_word[length-1] = ret_word;
+	last_loc[omp_get_thread_num()][length-1] = node;
+	last_word[omp_get_thread_num()][length-1] = ret_word;
 	return ret_word;
 }
 
@@ -826,7 +835,7 @@ string radix_trie::get_next_word(radix_trie_node *temp_root, int length)
 	string ret_word = "";
 	radix_trie_node *node = NULL;
 	//if we haven't returned anything yet...
-	if(last_ext_loc[length-1] == NULL && last_ext[length-1].compare("") == 0) 
+	if(last_ext_loc[omp_get_thread_num()][length-1] == NULL && last_ext[omp_get_thread_num()][length-1].compare("") == 0) 
 	{
 		//if we have a trie here...
 		if(temp_root && temp_root->branch)	
@@ -861,24 +870,24 @@ string radix_trie::get_next_word(radix_trie_node *temp_root, int length)
 							}
 							if(ret_word.length()==0 && next_branch_iterator >= ALPH)
 							{
-								last_ext_loc[length-1] = NULL;
-								last_ext[length-1].clear();
-								last_ext[length-1] = "";
+								last_ext_loc[omp_get_thread_num()][length-1] = NULL;
+								last_ext[omp_get_thread_num()][length-1].clear();
+								last_ext[omp_get_thread_num()][length-1] = "";
 								return "";
 							}
 						}						
 					}
 				}
 			}
-			last_ext_loc[length-1] = node;
-			last_ext[length-1] = ret_word;
+			last_ext_loc[omp_get_thread_num()][length-1] = node;
+			last_ext[omp_get_thread_num()][length-1] = ret_word;
 			return ret_word;
 		}
 	}
 	//otherwise we have something and can start from there...
 	else {
-		char branch_id = last_ext[length-1][last_ext[length-1].length()-1];
-		ret_word = last_ext[length-1].substr(0, last_ext[length-1].length()-1);
+		char branch_id = last_ext[omp_get_thread_num()][length-1][last_ext[omp_get_thread_num()][length-1].length()-1];
+		ret_word = last_ext[omp_get_thread_num()][length-1].substr(0, last_ext[omp_get_thread_num()][length-1].length()-1);
 		next_branch_iterator = locate_branch(branch_id) + 1;
 		node = temp_root;
 		for (int i=0; i<static_cast<int>(ret_word.length()); i++) {
@@ -916,9 +925,9 @@ string radix_trie::get_next_word(radix_trie_node *temp_root, int length)
 						}
 						if(ret_word.compare("") == 0 && (next_branch_iterator >= ALPH || next_branch_iterator < 0))
 						{
-							last_ext_loc[length-1] = NULL;
-							last_ext[length-1].clear();
-							last_ext[length-1] = "";
+							last_ext_loc[omp_get_thread_num()][length-1] = NULL;
+							last_ext[omp_get_thread_num()][length-1].clear();
+							last_ext[omp_get_thread_num()][length-1] = "";
 							return "";
 						}
 					}	
@@ -926,8 +935,8 @@ string radix_trie::get_next_word(radix_trie_node *temp_root, int length)
 			}
 		}
 	}	
-	last_ext_loc[length-1] = node;
-	last_ext[length-1] = ret_word;
+	last_ext_loc[omp_get_thread_num()][length-1] = node;
+	last_ext[omp_get_thread_num()][length-1] = ret_word;
 	return ret_word;
 }
 
