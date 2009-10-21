@@ -109,6 +109,8 @@ class data
 		
 		//function to iterate through the words contained in the data structure
 		virtual string get_next_word(int length)=0;
+		//function to get a block of words to process (eliminate contention between threads
+		virtual vector<string> get_next_word_block(int length, int count)=0;
 		//function to get all words of length x given a seed of length y
 		virtual string get_next_extension(string seed, int length)=0;
 		//function to output information
