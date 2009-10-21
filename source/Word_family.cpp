@@ -106,7 +106,11 @@ word_family::word_family(owef_args *input_list,data *structure, word_scoring *mo
 		{
 			string next_word;
     			//threadID = omp_get_thread_num();
-    			next_word = structure->get_next_word(i+list->minlength);
+    			#pragma omp critical
+    			{
+	    			next_word = structure->get_next_word(i+list->minlength);
+	    			//printf("%s\n",next_word.c_str());
+			}
 			int temp_n = list->no_n;
 			if(list->no_n - i+list->minlength < 2)
   				temp_n = list->no_n - i+list->minlength;
@@ -138,7 +142,6 @@ word_family::word_family(owef_args *input_list,data *structure, word_scoring *mo
   		ratio_file.close();
   		fam_number += families.size();
   	}
-  	structure->reset(omp_get_thread_num());
 }
 
 
