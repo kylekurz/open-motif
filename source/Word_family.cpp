@@ -157,11 +157,7 @@ double word_family::create_family(string w,data *structure, word_scoring *model,
 		double covar = 0;
 		double count = 0;
 		vector<string> temp;
-		#pragma omp critical
-		{
-			temp = structure->get_regex_matches(w);
-		}
-		//cout << "got matches " << temp.size() << endl;
+		temp = structure->get_regex_matches(w);
 		if(static_cast<int>(temp.size() > 1))
 		{
 			for(int i=0; i < static_cast<int>(temp.size()); i++)
