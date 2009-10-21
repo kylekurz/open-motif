@@ -732,6 +732,22 @@ void radix_trie::reset_iterator(int thread)
 	}
 }
 
+//get the next consecutive block of words from the trie
+vector<string> radix_trie::get_next_word_block(int length, int count)
+{
+	vector<string> ret_vector;
+	for(int i=0; i<count; i++)
+	{
+		string t = get_next_word(length);
+		if(t.compare("") == 0)
+			return ret_vector;
+		else
+			ret_vector.push_back(t);
+		t.clear();
+	}
+	return ret_vector;
+}
+
 //systematically returns EVERY word stored in the trie at a given length.  It is the caller's responsibility
 //to verify that the word meets any requirements of the job (i.e. min_O and min_seqs before output)
 string radix_trie::get_next_word(int length)
@@ -771,6 +787,13 @@ string radix_trie::get_next_word(int length)
 								if(node && node->branch && node->branch[locate_branch(ret_word[i])]) {
 									node = node->branch[locate_branch(ret_word[i])];
 								}
+							}
+							if(ret_word.length()==0 && next_branch >= ALPH)
+							{
+								last_loc[length-1] = NULL;
+								last_word[length-1].clear();
+								last_word[length-1] = "";
+								return "";
 							}
 						}						
 					}
@@ -819,6 +842,13 @@ string radix_trie::get_next_word(int length)
 							if(node && node->branch && node->branch[locate_branch(ret_word[i])]) {
 								node = node->branch[locate_branch(ret_word[i])];
 							}
+						}
+						if(ret_word.compare("") == 0 && (next_branch >= ALPH || next_branch < 0))
+						{
+							last_loc[length-1] = NULL;
+							last_word[length-1].clear();
+							last_word[length-1] = "";
+							return "";
 						}
 					}	
 				}

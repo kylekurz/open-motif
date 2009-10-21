@@ -66,6 +66,8 @@ class radix_trie : public data
 		vector<string> get_regex_matches(string regex);
 		//function to get all of the sequences from the input file
 		vector<string> get_seq_file();
+		//function to get a block of words
+		vector<string> get_next_word_block(int length, int count);
 		//function to iterate through the words contained in the data structure
 		string get_next_word(int length);
 		//function to iterate through the words contained in the data structure from a temporary root

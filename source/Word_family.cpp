@@ -24,6 +24,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "Word_family.h"
 
+#define BLOCK_SIZE 50
+
 using namespace std;
 using namespace rmes;
 
@@ -100,44 +102,54 @@ word_family::word_family(owef_args *input_list,data *structure, word_scoring *mo
     		totalThreads = 0;
     		threadID = 0;
     		radix_trie *family_structure = new radix_trie(list, 1);
+		
+		int num_blocks = (i + list->num_words[list->minlength-1]/BLOCK_SIZE) + 1;
 
-    		#pragma omp parallel for default(none) shared(ratio_file, i, structure, model, family_structure) private(j, threadID, families)
-		for(j=0; j < i+list->num_words[list->minlength-1]; j++)
+    		#pragma omp parallel for default(none) shared(ratio_file, i, structure, model, family_structure, num_blocks) private(j, threadID, families)
+		for(j=0; j <num_blocks; j++)
 		{
-			string next_word;
+			//printf("getting words\n");
+			vector<string> word_list;
     			//threadID = omp_get_thread_num();
     			#pragma omp critical
     			{
-	    			next_word = structure->get_next_word(i+list->minlength);
+	    			word_list = structure->get_next_word_block(i+list->minlength, BLOCK_SIZE);
 	    			//printf("%s\n",next_word.c_str());
 			}
+			//printf("got %d words\n", word_list.size());
 			int temp_n = list->no_n;
 			if(list->no_n - i+list->minlength < 2)
   				temp_n = list->no_n - i+list->minlength;
-			for (int k=1; k<static_cast<int> (next_word.length()-1); k++) 
-			{
-				for(int l=0; l<temp_n; l++)
-				{
-					if(k+l < static_cast<int>(next_word.length())-1)
+	  		for(int x=0; x<static_cast<int>(word_list.size()); x++)
+	  		{
+	  			if(word_list[x].compare("") != 0)
+	  			{
+					for (int k=1; k<static_cast<int> (word_list[x].length()-1); k++) 
 					{
-						string copy = next_word;
-						copy.replace(k, l+1, l+1, 'N');
-						//printf("%s\n", copy.c_str());
-						if(family_structure->get_count(copy) == 0)
+						for(int l=0; l<temp_n; l++)
 						{
-							family_structure->inc_count(copy);
-							double ratio = create_family(copy, structure, model, list->order);
-							if(ratio != 0)
+							if(k+l < static_cast<int>(word_list[x].length())-1)
 							{
-								#pragma omp critical
+								string copy = word_list[x];
+								copy.replace(k, l+1, l+1, 'N');
+								//printf("%s\n", copy.c_str());
+								if(family_structure->get_count(copy) == 0)
 								{
-									ratio_file << copy << "," << ratio << endl;
+									family_structure->inc_count(copy);
+									double ratio = create_family(copy, structure, model, list->order);
+									if(ratio != 0)
+									{
+										#pragma omp critical
+										{
+											ratio_file << copy << "," << ratio << endl;
+										}
+									}
 								}
 							}
-						}
-					}
-    				}
-    			}
+		    				}
+		    			}
+		    		}
+	    		}
   		}
   		ratio_file.close();
   		fam_number += families.size();
