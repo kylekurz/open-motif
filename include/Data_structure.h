@@ -114,7 +114,7 @@ class data
 		//function to output information
 		virtual void output()=0;
 		//function to reset last_word variables
-		virtual void reset()=0;
+		virtual void reset(int thread)=0;
 	protected:
 		//pointer to the list of input parameters
 		owef_args *list;

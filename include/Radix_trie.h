@@ -75,9 +75,9 @@ class radix_trie : public data
 		//function to output information
 		void output();
 		//function to reset last_word variables
-		void reset();
+		void reset(int thread);
 		//function to reset last_iterator variables
-		void reset_iterator();
+		void reset_iterator(int thread);
 		//function to expand a word to the set of families
 		vector<string> expand_family(string word);
 		
@@ -166,10 +166,10 @@ class radix_trie : public data
 		vector<vector<string> > breadth_search;
 		
 		//store the last reported word
-		vector<string> last_word;
-		vector<radix_trie_node *> last_loc;
-		vector<string> last_ext;
-		vector<radix_trie_node *> last_ext_loc;
+		vector<vector<string> > last_word;
+		vector<vector<radix_trie_node *> > last_loc;
+		vector<vector<string> > last_ext;
+		vector<vector<radix_trie_node *> > last_ext_loc;
 		int next_branch, next_branch_iterator;	
 		bool flag;
 };
