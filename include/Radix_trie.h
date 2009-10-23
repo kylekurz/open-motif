@@ -154,6 +154,10 @@ class radix_trie : public data
 		//string convert(string check);
 		//string unconvert(string check);
 		string to_upper(const string & word );
+		
+		//functions to get the thread information from the system, regardless of whether we have OMP or not
+		int thread_num();
+		int num_procs();
 				
 		//***********************************************************
 		//Radix Trie variables

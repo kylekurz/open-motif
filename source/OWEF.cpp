@@ -76,7 +76,11 @@ owef::owef(owef_args *from_input)
 		
   	}
 	end = clock();
+	#ifdef _OPENMP
 	double nprocs = (double)omp_get_num_procs();
+	#else
+	double nprocs = 1;
+	#endif
 	duration = (double)(end-start)/CLOCKS_PER_SEC;
 	duration = duration/nprocs;
 	printf("Familying finished in: %f seconds\n", duration);

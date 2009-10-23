@@ -40,16 +40,16 @@ namespace rmes {
   
   Alphabet::Alphabet(const string &alphabetString)
   {
-    unsigned int  pos=alphabetString.find_first_of(':');
+    int pos=alphabetString.find_first_of(':');
     string characters;
     string interruptchars;
     char joker='\0';
-    if (pos != string::npos && pos >0) {
+    if (pos != static_cast<int>(string::npos) && pos >0) {
       characters=alphabetString.substr(0,pos);
-      unsigned int pos2=alphabetString.find(':',pos+1);
-      if (pos2 != string::npos && pos2>pos) {
+      int pos2=alphabetString.find(':',pos+1);
+      if (pos2 != static_cast<int>(string::npos) && pos2>pos) {
       	interruptchars=alphabetString.substr(pos+1,(pos2-pos-1));
-	if (pos2+1 < alphabetString.length())
+	if (pos2+1 < static_cast<int>(alphabetString.length()))
 	  joker=alphabetString[pos2+1];
       }
       else
