@@ -73,13 +73,19 @@ rmes_model::rmes_model(owef_args *input_list,data *structure)
     		totalThreads = 0;
     		threadID = 0;
     		
+    		#ifdef _OPENMP
         	#pragma omp parallel for default(none) shared(ratio_file, i, structure, order) private(j, threadID, next_word, ratio)
+        	#endif
         	for(j=0; j<list->num_words[i+list->minlength-1]; j++)
         	{
+        		#ifdef _OPENMP
         		#pragma omp critical
         		{
 	        	        next_word = structure->get_next_word(i+list->minlength);
 			}
+			#else
+			next_word = structure->get_next_word(i+list->minlength);
+			#endif
 			
 			scores *word = NULL;
 			word = structure->get_stats(next_word);
@@ -90,10 +96,14 @@ rmes_model::rmes_model(owef_args *input_list,data *structure)
 			}		
                         ratio = compute_ratio(word->expect, word->variance, structure->get_count(next_word));
                         
+                        #ifdef _OPENMP
                         #pragma omp critical
                         {
 	                        ratio_file<<next_word<<","<<structure->get_count(next_word)<<","<<word->expect<<","<<word->variance<<","<<ratio<<endl;
 	                }
+	                #else
+	                ratio_file<<next_word<<","<<structure->get_count(next_word)<<","<<word->expect<<","<<word->variance<<","<<ratio<<endl;
+	                #endif
                 }
                 ratio_file.close();
         }

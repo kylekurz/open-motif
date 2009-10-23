@@ -15,8 +15,8 @@
 #
 #****************************************************************
 
-CPPFLAGS = -Wall -O2 -DKKURZ_MPI
-CC = g++
+CPPFLAGS = -O2 -Wall -Werror -DKKURZ_MPI -DMPICH_IGNORE_CXX_SEEK
+CC = mpicxx
 MAIN = source/OWEF_Main.cpp
 PLAT = seq
 PROJ = bin/OWEFexec
@@ -24,12 +24,12 @@ DEBUG := no
 
 ifeq ($(PLAT),multi)
 MPI = 1;
-CC = mpiCC
+CC = mpicxx
 endif
 
 ifeq ($(PLAT),seq)
 CC = g++
-CPPFLAGS = -Wall -O2
+CPPFLAGS = -Wall -O2 -fopenmp
 endif
 
 SRCDIR := source
@@ -47,7 +47,7 @@ OBJS := $(addprefix $(OBJDIR)/,$(SRCS:.cpp=.o))
 all: $(OBJS)
 
 install: $(OBJS)
-	$(CC) -o $(PROJ) $(CPPFLAGS) $(MAIN) $^ -lpthread -fopenmp
+	$(CC) -o $(PROJ) $(CPPFLAGS) $(MAIN) $^ -lpthread
 
 ifeq ($(OBJDIR),debug)
 all: CPPFLAGS = -Wall -g -pg
@@ -57,7 +57,7 @@ install: CPPFLAGS += $(addprefix -I ,$(INCLUDE_DIRECTORIES))
 endif
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.cpp
-	$(CC) -c $(CPPFLAGS) $(OUTPUT_OPTION) $< -fopenmp
-
+	$(CC) -c $(CPPFLAGS) $(OUTPUT_OPTION) $<
+	
 clean :
 	rm -rf *.o *.gch *-db OWEFexec source/*.o source/*.gch source/*-db source/OWEFexec include/*.o include/*.gch include/*-db include/OWEFexec bin/*.o bin/*.gch bin/*-db bin/OWEFexec release/*.o release/*.gch release/*-db release/OWEFexec debug/*.o debug/*.gch debug/*-db debug/OWEFexec

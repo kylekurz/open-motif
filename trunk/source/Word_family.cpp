@@ -84,8 +84,9 @@ word_family::word_family(owef_args *input_list,data *structure, word_scoring *mo
 	
 	int num_files = (list->maxlength - list->minlength)+1;
 	int fam_number = 0;
+	int i;
 //	start=clock();
-	for(int i=0; i<num_files; i++)
+	for(i=0; i<num_files; i++)
 	{
 		stringstream stream_2;
 	  	ofstream ratio_file;
@@ -104,20 +105,25 @@ word_family::word_family(owef_args *input_list,data *structure, word_scoring *mo
     		radix_trie *family_structure = new radix_trie(list, 1);
 		
 		int num_blocks = (i + list->num_words[list->minlength-1]/BLOCK_SIZE) + 1;
-
+		
+		#ifdef _OPENMP
     		#pragma omp parallel for default(none) shared(ratio_file, i, structure, model, family_structure, num_blocks) private(j, threadID, families)
+    		#endif
 		for(j=0; j <num_blocks; j++)
 		{
 			vector<double> ratios;
 			//printf("getting words\n");
 			vector<string> word_list;
-    			//threadID = omp_get_thread_num();
+    			
+    			#ifdef _OPENMP
     			#pragma omp critical
     			{
 	    			word_list = structure->get_next_word_block(i+list->minlength, BLOCK_SIZE);
-	    			//printf("%s\n",next_word.c_str());
 			}
-			//printf("got %d words\n", word_list.size());
+			#else
+			word_list = structure->get_next_word_block(i+list->minlength, BLOCK_SIZE);
+			#endif
+			
 			int temp_n = list->no_n;
 			if(list->no_n - i+list->minlength < 2)
   				temp_n = list->no_n - i+list->minlength;
@@ -133,17 +139,20 @@ word_family::word_family(owef_args *input_list,data *structure, word_scoring *mo
 							{
 								string copy = word_list[x];
 								copy.replace(k, l+1, l+1, 'N');
-								//printf("%s\n", copy.c_str());
 								if(family_structure->get_count(copy) == 0)
 								{
 									family_structure->inc_count(copy);
 									double ratio = create_family(copy, structure, model, list->order);
 									if(ratio != 0)
 									{
+										#ifdef _OPENMP
 										#pragma omp critical
 										{
 											ratio_file << copy << ',' << ratio << endl;
 										}
+										#else
+										ratio_file << copy << ',' << ratio << endl;
+										#endif
 									}
 								}
 							}

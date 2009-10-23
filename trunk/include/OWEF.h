@@ -39,7 +39,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <math.h>
 #include <omp.h>
 
-#ifdef MPI
+#ifdef KKURZ_MPI
 #include <mpi.h>
 #endif
 

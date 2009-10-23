@@ -53,7 +53,7 @@ radix_trie::~radix_trie()
 #ifdef KKURZ_MPI
 void* listener(void *_Object) 
 {
-	int flag=0;
+	//int flag=0;
 	args *p = (args *)_Object;
 	int length = p->my_list->maxlength+1;
 	int done = 1;
@@ -89,6 +89,11 @@ void* listener(void *_Object)
 			int x = atoi(to_count);
 			ret = p->my_list->num_words[x];
 			rc = MPI_Send(&ret, 1, MPI_INT, 0, 3, MPI_COMM_WORLD);
+		}
+		else if(done == 4)
+		{
+			scores *s = p->job->get_stats(test);
+			rc = MPI_Send(s, 1, MPI_INT, 0, 4, MPI_COMM_WORLD);
 		}
 	}
 	return NULL;
@@ -128,7 +133,7 @@ radix_trie::radix_trie(owef_args *from_input)
 		last_loc.push_back(temp);
 		last_word.push_back(word);
 	}
-	for(int h=0; h<omp_get_num_procs(); h++)
+	for(int h=0; h<num_procs(); h++)
         {
                 vector<string> t1;
                 vector<radix_trie_node *> t2;
@@ -300,6 +305,31 @@ int radix_trie::get_seqs(string motif)
 		return trie_find_s(root, t, l);
 	}
 }
+
+//function to get the stats from a word
+scores* radix_trie::get_stats(string motif)
+{
+	//motif = convert(motif);
+	int count = motif.length();
+	int ret_count = 1;
+	int dest = locate_branch(motif[0]);
+	int ret, rc;
+	MPI_Status *status = NULL;
+	//compute all the necessary scores
+	if(dest != list->rank)
+	{
+		//motif = unconvert(motif);
+		rc = MPI_Send(&motif[0], count, MPI_CHAR, dest, 4, MPI_COMM_WORLD);
+		rc = MPI_Recv(&ret, ret_count, MPI_INT, dest, 4, MPI_COMM_WORLD, status); 
+		return (scores *)ret;
+	}
+	else
+	{
+		char *t = &motif[0];
+		int l = motif.length();
+		return trie_find_stats(root, t, l);
+	}
+}
 #endif
 
 #ifndef KKURZ_MPI
@@ -368,8 +398,8 @@ vector<string> radix_trie::get_regex_matches(string regex)
 			}
 			i = regex.length()+1;
 			tmp = NULL;
-			reset_iterator(omp_get_thread_num());
-			next_branch_iterator[omp_get_thread_num()] = 0;
+			reset_iterator(thread_num());
+			next_branch_iterator[thread_num()] = 0;
 		}
 	}
 	while (!t1.empty())
@@ -406,8 +436,8 @@ vector<string> radix_trie::get_regex_matches(string regex)
 				}
 				i = regex.length()+1;
 				tmp = NULL;
-				reset_iterator(omp_get_thread_num());
-				next_branch_iterator[omp_get_thread_num()] = 0;
+				reset_iterator(thread_num());
+				next_branch_iterator[thread_num()] = 0;
 			}
 		}
 		for(int j=temp.length(); j<static_cast<int>(regex.length()); j++)
@@ -927,7 +957,7 @@ string radix_trie::get_next_word(radix_trie_node *temp_root, int length)
 	string ret_word = "";
 	radix_trie_node *node = NULL;
 	//if we haven't returned anything yet...
-	if(last_ext_loc[omp_get_thread_num()][length-1] == NULL && last_ext[omp_get_thread_num()][length-1].compare("") == 0) 
+	if(last_ext_loc[thread_num()][length-1] == NULL && last_ext[thread_num()][length-1].compare("") == 0) 
 	{
 		//if we have a trie here...
 		if(temp_root && temp_root->branch)	
@@ -937,50 +967,50 @@ string radix_trie::get_next_word(radix_trie_node *temp_root, int length)
 			while(static_cast<int>(ret_word.length()) < length) 
 			{
 				//if we can keep following this branch
-				if(node->branch && node->branch[next_branch_iterator[omp_get_thread_num()]]) 
+				if(node->branch && node->branch[next_branch_iterator[thread_num()]]) 
 				{
-					///char x = conversion[next_branch_iterator[omp_get_thread_num()]];
-					char x = 'A' + reverse_branch[next_branch_iterator[omp_get_thread_num()]];  // ljn 10/5/2009
+					///char x = conversion[next_branch_iterator[thread_num()]];
+					char x = 'A' + reverse_branch[next_branch_iterator[thread_num()]];  // ljn 10/5/2009
 					ret_word += x;
-					node = node->branch[next_branch_iterator[omp_get_thread_num()]];
-					next_branch_iterator[omp_get_thread_num()] = 0;
+					node = node->branch[next_branch_iterator[thread_num()]];
+					next_branch_iterator[thread_num()] = 0;
 				}
 				//otherwise, gotta increment and look at the next branch
 				else 
 				{
-					next_branch_iterator[omp_get_thread_num()]++;
-					if (next_branch_iterator[omp_get_thread_num()] >= ALPH) {
-						while (next_branch_iterator[omp_get_thread_num()] >= ALPH) {
+					next_branch_iterator[thread_num()]++;
+					if (next_branch_iterator[thread_num()] >= ALPH) {
+						while (next_branch_iterator[thread_num()] >= ALPH) {
 							char branch_id = ret_word[ret_word.length()-1];
 							ret_word = ret_word.substr(0, ret_word.length()-1);
-							next_branch_iterator[omp_get_thread_num()] = locate_branch(branch_id) + 1;
+							next_branch_iterator[thread_num()] = locate_branch(branch_id) + 1;
 							node = temp_root;
 							for (int i=0; i<static_cast<int>(ret_word.length()); i++) {
 								if(node && node->branch && node->branch[locate_branch(ret_word[i])]) {
 									node = node->branch[locate_branch(ret_word[i])];
 								}
 							}
-							if(ret_word.length()==0 && next_branch_iterator[omp_get_thread_num()] >= ALPH)
+							if(ret_word.length()==0 && next_branch_iterator[thread_num()] >= ALPH)
 							{
-								last_ext_loc[omp_get_thread_num()][length-1] = NULL;
-								last_ext[omp_get_thread_num()][length-1].clear();
-								last_ext[omp_get_thread_num()][length-1] = "";
+								last_ext_loc[thread_num()][length-1] = NULL;
+								last_ext[thread_num()][length-1].clear();
+								last_ext[thread_num()][length-1] = "";
 								return "";
 							}
 						}						
 					}
 				}
 			}
-			last_ext_loc[omp_get_thread_num()][length-1] = node;
-			last_ext[omp_get_thread_num()][length-1] = ret_word;
+			last_ext_loc[thread_num()][length-1] = node;
+			last_ext[thread_num()][length-1] = ret_word;
 			return ret_word;
 		}
 	}
 	//otherwise we have something and can start from there...
 	else {
-		char branch_id = last_ext[omp_get_thread_num()][length-1][last_ext[omp_get_thread_num()][length-1].length()-1];
-		ret_word = last_ext[omp_get_thread_num()][length-1].substr(0, last_ext[omp_get_thread_num()][length-1].length()-1);
-		next_branch_iterator[omp_get_thread_num()] = locate_branch(branch_id) + 1;
+		char branch_id = last_ext[thread_num()][length-1][last_ext[thread_num()][length-1].length()-1];
+		ret_word = last_ext[thread_num()][length-1].substr(0, last_ext[thread_num()][length-1].length()-1);
+		next_branch_iterator[thread_num()] = locate_branch(branch_id) + 1;
 		node = temp_root;
 		for (int i=0; i<static_cast<int>(ret_word.length()); i++) {
 			if(node && node->branch && node->branch[locate_branch(ret_word[i])]) {
@@ -991,35 +1021,35 @@ string radix_trie::get_next_word(radix_trie_node *temp_root, int length)
 		while(static_cast<int>(ret_word.length()) < length) 
 		{
 			//if we can keep following this branch
-			if(node && node->branch && node->branch[next_branch_iterator[omp_get_thread_num()]]) 
+			if(node && node->branch && node->branch[next_branch_iterator[thread_num()]]) 
 			{
-				///char x = conversion[next_branch_iterator[omp_get_thread_num()]];
-				char x = 'A' + reverse_branch[next_branch_iterator[omp_get_thread_num()]];  // ljn 10/5/2009
+				///char x = conversion[next_branch_iterator[thread_num()]];
+				char x = 'A' + reverse_branch[next_branch_iterator[thread_num()]];  // ljn 10/5/2009
 				ret_word += x;
-				node = node->branch[next_branch_iterator[omp_get_thread_num()]];
-				next_branch_iterator[omp_get_thread_num()] = 0;
+				node = node->branch[next_branch_iterator[thread_num()]];
+				next_branch_iterator[thread_num()] = 0;
 			}
 			//otherwise, gotta increment and look at the next branch
 			else 
 			{
-				next_branch_iterator[omp_get_thread_num()]++;
-				if (next_branch_iterator[omp_get_thread_num()] >= ALPH) {
+				next_branch_iterator[thread_num()]++;
+				if (next_branch_iterator[thread_num()] >= ALPH) {
 					char branch_id;
-					while (next_branch_iterator[omp_get_thread_num()] >= ALPH) {
+					while (next_branch_iterator[thread_num()] >= ALPH) {
 						branch_id = ret_word[ret_word.length()-1];					
 						ret_word = ret_word.substr(0, ret_word.length()-1);
-						next_branch_iterator[omp_get_thread_num()] = locate_branch(branch_id) + 1;
+						next_branch_iterator[thread_num()] = locate_branch(branch_id) + 1;
 						node = temp_root;
 						for (int i=0; i<static_cast<int>(ret_word.length()); i++) {
 							if(node && node->branch && node->branch[locate_branch(ret_word[i])]) {
 								node = node->branch[locate_branch(ret_word[i])];
 							}
 						}
-						if(ret_word.compare("") == 0 && (next_branch_iterator[omp_get_thread_num()] >= ALPH || next_branch_iterator[omp_get_thread_num()] < 0))
+						if(ret_word.compare("") == 0 && (next_branch_iterator[thread_num()] >= ALPH || next_branch_iterator[thread_num()] < 0))
 						{
-							last_ext_loc[omp_get_thread_num()][length-1] = NULL;
-							last_ext[omp_get_thread_num()][length-1].clear();
-							last_ext[omp_get_thread_num()][length-1] = "";
+							last_ext_loc[thread_num()][length-1] = NULL;
+							last_ext[thread_num()][length-1].clear();
+							last_ext[thread_num()][length-1] = "";
 							return "";
 						}
 					}	
@@ -1027,8 +1057,8 @@ string radix_trie::get_next_word(radix_trie_node *temp_root, int length)
 			}
 		}
 	}	
-	last_ext_loc[omp_get_thread_num()][length-1] = node;
-	last_ext[omp_get_thread_num()][length-1] = ret_word;
+	last_ext_loc[thread_num()][length-1] = node;
+	last_ext[thread_num()][length-1] = ret_word;
 	return ret_word;
 }
 
@@ -1259,4 +1289,24 @@ string radix_trie::to_upper(const string & word)
 	}
 	return temp;
 }
+
+int radix_trie::thread_num()
+{
+	#ifdef _OPENMP
+	return omp_get_thread_num();
+	#else
+	return 0;
+	#endif
+}
+
+int radix_trie::num_procs()
+{
+	#ifdef _OPENMP
+	return omp_get_num_procs();
+	#else
+	return 1;
+	#endif
+}
+
+
 
