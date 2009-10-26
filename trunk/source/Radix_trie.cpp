@@ -37,6 +37,7 @@ radix_trie::radix_trie()
 	root = NULL;
 }
 
+//create an empty trie...
 radix_trie::radix_trie(owef_args *from_input, int x)
 {
 	list = from_input;
@@ -102,9 +103,7 @@ void* listener(void *_Object)
 	
 //initialized radix trie
 radix_trie::radix_trie(owef_args *from_input)
-{	
-	//branch_array = {0,4,1,4,4,4,2,4,4,4,4,4,4,4,4,4,4,4,4,3,4,4,4,4,4,4};
-
+{
 	#ifdef KKURZ_MPI
 	// create new thread for listener, which will wait for requests
 	pthread_t listen_thread;
@@ -160,9 +159,7 @@ radix_trie::radix_trie(owef_args *from_input)
 	cout << "Number of words of length: " << endl;
 	for(int i=0; i<list->maxlength; i++)
 		cout << i+1 << " " << list->num_words[i] << endl;
-	#endif
-	
-	#ifdef KKURZ_MPI
+	#else
 	if(list->rank == 0)
 	{
 		int word_counts[list->maxlength];
@@ -202,9 +199,10 @@ radix_trie::radix_trie(owef_args *from_input)
 			ofile.close();
 		}
 	}
+	/*
 	if(list->rank != 0)
 	{
-		/*int length = list->maxlength+1;
+		int length = list->maxlength+1;
 		int done = 1;
 		int ret, rc;
 		char to_count[list->maxlength+1];
@@ -239,8 +237,8 @@ radix_trie::radix_trie(owef_args *from_input)
 				ret = list->num_words[x];
 				rc = MPI_Send(&ret, 1, MPI_INT, 0, 3, MPI_COMM_WORLD);
 			}
-		}*/
-	}
+		}
+	}*/
 	#endif
 	if(!list->score)
 		output();
@@ -361,6 +359,8 @@ scores* radix_trie::get_stats(string motif)
 }
 #endif
 
+//function to iteratively walk the regular expression provided and retrieve a list of all words
+//in the trie that match
 vector<string> radix_trie::get_regex_matches(string regex)
 {
 	vector<string> ret_vector, t1;
@@ -382,14 +382,11 @@ vector<string> radix_trie::get_regex_matches(string regex)
 			int pos = i;
 			while(branch_array[regex[++pos] - 'A'] == ALPH-1)
 				num_n++;
-			//cout << pos << " " << num_n << endl;
 			string partial = get_next_word(tmp, num_n);
 			num_calls++;
-			//cout << partial << endl;
 			while(partial.compare("") != 0)
 			{
 				string t2 = temp + partial;
-				//cout << t2 << endl;
 				t1.push_back(t2);
 				t2.clear();
 				partial.clear();
@@ -420,14 +417,11 @@ vector<string> radix_trie::get_regex_matches(string regex)
 				int pos = i;
 				while(branch_array[regex[++pos] - 'A'] == ALPH-1)
 					num_n++;
-				//cout << pos << " " << num_n << endl;
 				string partial = get_next_word(tmp, num_n);
 				num_calls++;
-				//cout << partial << endl;
 				while(partial.compare("") != 0)
 				{
 					string t2 = temp + partial;
-					//cout << t2 << endl;
 					t1.push_back(t2);
 					t2.clear();
 					partial.clear();
@@ -456,64 +450,15 @@ vector<string> radix_trie::get_regex_matches(string regex)
 				j = regex.length();
 			}
 		}
-        
-               /* string temp = t1.back();
-                t1.pop_back();
-                if(temp.length() < regex.length())
-                {
-                	temp += regex[temp.length()];
-                	//num_calls++;
-                        //if(get_count(temp) > 0)
-                	t1.push_back(temp);
-                }
-                else
-                {
-                	//num_calls++;
-                        if(get_count(temp) != 0)
-                                ret_vector.push_back(temp);
-                }*/
         }
- //       cout << "seed " << regex << " num_calls " << num_calls << " full query " << pow(4,num_n) << endl;
-        //cout << ret_vector.size() << endl;
         return ret_vector;
 }
 
-/*
-vector<string> radix_trie::get_regex_matches(string regex)
-{
-        vector<string> t1, ret_vector;
-        t1.push_back(regex);
-        while (!t1.empty()) 
-        {
-                string temp = t1.back();
-                t1.pop_back();
-                int found = temp.find_first_not_of("AaCcGgTt");
-                if(found != -1)
-                {
-                        for(int k=0; k<ALPH-1; k++)
-                        {
-                                temp[found] = 'A' + reverse_branch[k];
-                                if(get_count(temp.substr(0,found+1)) > 0)
-	                                t1.push_back(temp);
-                        }
-                }
-                else 
-                {
-                        if(get_count(temp) != 0)
-                        {
-                                ret_vector.push_back(temp);
-                        }
-                }
-        }
-        return ret_vector;
-}
-*/
 //function to get the sequences from the input file
 vector<string> radix_trie::get_seq_file()
 {
 	vector<string> seqs;
 	ifstream in;
-	//cout << list->seq_file << endl;
 	in.open(list->seq_file.c_str());
 	if(in.fail())
 	{
@@ -601,14 +546,6 @@ int radix_trie::trie_stats(radix_trie_node *node, char *s, int length, scores *n
 	return trie_stats (node->branch[locate_branch(*s)], s + 1, length-1, new_stats);	
 }
 
-vector<string> radix_trie::expand_family(string motif)
-{
-	//do bounded breadth first search of the tree creating all sub-families of a word
-	vector<string> ret_vector;
-	
-	return ret_vector;
-}
-
 //************************************************************
 //General Purpose Functions
 //May do any number of operations, should still be implmented
@@ -677,7 +614,7 @@ void radix_trie::trie_add (radix_trie_node *& node, char *s, int length, int lev
 		{
 			node->branch = node->new_pointer_array();
 			//set all the pointers to NULL (avoid seg fault!)
-			for(int i=0; i<5; i++)
+			for(int i=0; i<ALPH; i++)
 				node->branch[i]=NULL;
 		}
 		if(!node->branch[idx])
@@ -797,7 +734,6 @@ void radix_trie::output()
 			if(get_count(to_out) >= list->min_O && get_seqs(to_out) >= list->min_seqs)
 				ofiles[i] << to_out << ',' << get_seqs(to_out) << ',' << get_count(to_out) << endl;
 		}
-		//output(ofiles[i], root, "", i+list->minlength);
 	}
 }
 
@@ -950,8 +886,8 @@ string radix_trie::get_next_word(int length)
 	return ret_word;
 }
 
-//systematically returns EVERY word stored in the trie at a given length.  It is the caller's responsibility
-//to verify that the word meets any requirements of the job (i.e. min_O and min_seqs before output)
+//systematically returns EVERY word stored in the trie at a given length from a provided root (could be the real root).  
+//It is the caller's responsibility to verify that the word meets any requirements of the job (i.e. min_O and min_seqs before output)
 string radix_trie::get_next_word(radix_trie_node *temp_root, int length)
 {
 	string ret_word = "";
@@ -1061,23 +997,6 @@ string radix_trie::get_next_word(radix_trie_node *temp_root, int length)
 	last_ext[thread_num()][length-1] = ret_word;
 	return ret_word;
 }
-
-//function to iterate through the subtree and find all occurring words of length x, //from a given seed of length y string 
-string radix_trie::get_next_extension(string seed, int length)
-{
-	length -= seed.length();
-	radix_trie_node *temp_root;
-	temp_root = root;
-	for(int i=0; i<static_cast<int>(seed.length()); i++)
-		temp_root = temp_root->branch[locate_branch(seed[i])];
-	string t = get_next_word(temp_root, length);
-	if(t.compare("")==0)
-		return "";
-	else
-		return seed.append(t);
-}
-
-
 
 //function to enumerate all possible strings from a string containing an 'X'
 void radix_trie::enumerate_string(ofstream &ofile, vector<string> words)
@@ -1252,30 +1171,12 @@ void radix_trie::count_words()
 	}
 }
 
-/*int radix_trie::locate_branch(char x)
-{
-	x = toupper(x);
-	int loc = -1;
-	for(int i=0; i<static_cast<int>(conversion.size()); i++)
-	{
-		if(x == conversion[i])
-		{
-			loc = i;
-			i = conversion.size();
-		}
-	}
-	if(loc >= ALPH)
-		loc = ALPH-1;
-	return loc;
-}*/
-
 // ljn added 10/5/2009
 int radix_trie::locate_branch(char x)
 {
 	int branch_index = -1;
 	x = toupper(x);
 	branch_index = branch_array[x - 'A'];
-	///cout << "Returning branch index: " << branch_index << endl;
 	return branch_index;
 }
 

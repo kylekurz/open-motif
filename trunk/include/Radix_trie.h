@@ -19,7 +19,7 @@ Hoebeke, Finn Drablos, Geir Kjetil Sandve, Lee Nau, Xiaoyu Liang, Rami Alouran, 
 #include "Radix_trie_leaf.h"
 
 #ifdef KKURZ_MPI
-#include <mpi.h>
+#include <mpi>
 #endif
 
 #ifndef KKURZ_RADIX_TRIE
@@ -72,16 +72,12 @@ class radix_trie : public data
 		string get_next_word(int length);
 		//function to iterate through the words contained in the data structure from a temporary root
 		string get_next_word(radix_trie_node *temp_root, int length);
-		//function to iterate through the entire subtree from a given word
-		string get_next_extension(string seed, int length);
 		//function to output information
 		void output();
 		//function to reset last_word variables
 		void reset();
 		//function to reset last_iterator variables
 		void reset_iterator(int thread);
-		//function to expand a word to the set of families
-		vector<string> expand_family(string word);
 		
 		//************************************************************
 		//Modifiers

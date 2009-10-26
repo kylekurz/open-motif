@@ -29,7 +29,7 @@ endif
 
 ifeq ($(PLAT),seq)
 CC = g++
-CPPFLAGS = -Wall -O2 -fopenmp
+CPPFLAGS = -Wall -Werror -O2 -fopenmp
 endif
 
 SRCDIR := source

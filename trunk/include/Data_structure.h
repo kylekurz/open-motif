@@ -89,8 +89,6 @@ class data
 		//virtual pair<string, int> get_regex_counts(string motif)=0;
 		//function to get the sequences from the input file
 		virtual vector<string> get_seq_file()=0;
-		//function to get the expanded list of words that match the family
-		virtual vector<string> expand_family(string motif)=0;
     
 		//************************************************************
 		//Modifiers
@@ -111,8 +109,6 @@ class data
 		virtual string get_next_word(int length)=0;
 		//function to get a block of words to process (eliminate contention between threads
 		virtual vector<string> get_next_word_block(int length, int count)=0;
-		//function to get all words of length x given a seed of length y
-		virtual string get_next_extension(string seed, int length)=0;
 		//function to output information
 		virtual void output()=0;
 		//function to reset last_word variables
