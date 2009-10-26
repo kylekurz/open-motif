@@ -30,6 +30,11 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 */
+
+#ifdef KKURZ_MPI
+#define MPICH_IGNORE_CXX_SEEK
+#include <mpi.h>
+#endif
  
 #include <algorithm>
 #include <cmath>
@@ -38,10 +43,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <iostream>
 #include <math.h>
 #include <omp.h>
-
-#ifdef KKURZ_MPI
-#include <mpi.h>
-#endif
 
 #include <pthread.h>
 #include <stdlib.h>
