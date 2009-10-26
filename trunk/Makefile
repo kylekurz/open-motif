@@ -15,7 +15,7 @@
 #
 #****************************************************************
 
-CPPFLAGS = -O2 -Wall -Werror -DKKURZ_MPI -DMPICH_IGNORE_CXX_SEEK
+CPPFLAGS = -O2 -Wall -Werror -DKKURZ_MPI
 CC = mpicxx
 MAIN = source/OWEF_Main.cpp
 PLAT = seq

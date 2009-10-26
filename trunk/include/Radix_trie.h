@@ -13,14 +13,14 @@ Copyright (C) 2009  Jens Lichtenberg, Kyle Kurz, Lonnie Welch, Frank Drews, Soph
 Hoebeke, Finn Drablos, Geir Kjetil Sandve, Lee Nau, Xiaoyu Liang, Rami Alouran, Matthew Wiley
 */
 
+#ifdef KKURZ_MPI
+#include <mpi.h>
+#endif
+
 #include "Alphabet.h"
 #include "Data_structure.h"
 #include "DNAAlphabet.h"
 #include "Radix_trie_leaf.h"
-
-#ifdef KKURZ_MPI
-#include <mpi>
-#endif
 
 #ifndef KKURZ_RADIX_TRIE
 #define KKURZ_RADIX_TRIE
