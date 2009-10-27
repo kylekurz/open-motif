@@ -361,9 +361,9 @@ scores* radix_trie::get_stats(string motif)
 
 //function to iteratively walk the regular expression provided and retrieve a list of all words
 //in the trie that match
-vector<string> radix_trie::get_regex_matches(string regex)
+void radix_trie::get_regex_matches(vector<string> &matches, string regex)
 {
-	vector<string> ret_vector, t1;
+	vector<string> t1;
 	radix_trie_node *tmp = root;
 	int num_calls = 0;
 	int num_n = 0;
@@ -442,7 +442,7 @@ vector<string> radix_trie::get_regex_matches(string regex)
 				temp += regex[j];
 				tmp = tmp->branch[nb];
 				if(temp.length() == regex.length())
-					ret_vector.push_back(temp);
+					matches.push_back(temp);
 			}
 			else
 			{
@@ -451,13 +451,12 @@ vector<string> radix_trie::get_regex_matches(string regex)
 			}
 		}
         }
-        return ret_vector;
+        return;
 }
 
 //function to get the sequences from the input file
-vector<string> radix_trie::get_seq_file()
+void radix_trie::get_seq_file(vector<string> &sequences)
 {
-	vector<string> seqs;
 	ifstream in;
 	in.open(list->seq_file.c_str());
 	if(in.fail())
@@ -483,12 +482,12 @@ vector<string> radix_trie::get_seq_file()
 				getline(in, t);
 				tag.append(t);
 			}	
-			seqs.push_back(tag);
+			sequences.push_back(tag);
 		}
 		tag.clear();
 	}
 	in.close();
-	return seqs;
+	return;
 }	
 		
 //************************************************************
@@ -759,19 +758,18 @@ void radix_trie::reset_iterator(int thread)
 }
 
 //get the next consecutive block of words from the trie
-vector<string> radix_trie::get_next_word_block(int length, int count)
+void radix_trie::get_next_word_block(vector<string> &block, int length, int count)
 {
-	vector<string> ret_vector;
 	for(int i=0; i<count; i++)
 	{
 		string t = get_next_word(length);
 		if(t.compare("") == 0)
-			return ret_vector;
+			return;
 		else
-			ret_vector.push_back(t);
+			block.push_back(t);
 		t.clear();
 	}
-	return ret_vector;
+	return;
 }
 
 //systematically returns EVERY word stored in the trie at a given length.  It is the caller's responsibility
@@ -1132,7 +1130,8 @@ void radix_trie::count_words()
 	//to their data structure of choice.
 	//******************************************************************
 	
-	vector<string> seqs = get_seq_file();
+	vector<string> seqs;
+	get_seq_file(seqs);
 	int h;
 	
 	for(h=0; h<static_cast<int>(seqs.size()); h++)

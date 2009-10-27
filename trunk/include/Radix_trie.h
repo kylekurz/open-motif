@@ -63,11 +63,11 @@ class radix_trie : public data
 		//function to get the statistics stored in a leaf node from the trie
 		scores* get_stats(string motif);
 		//function to return all words that match a regular expression
-		vector<string> get_regex_matches(string regex);
+		void get_regex_matches(vector<string> &matches, string regex);
 		//function to get all of the sequences from the input file
-		vector<string> get_seq_file();
+		void get_seq_file(vector<string> &sequences);
 		//function to get a block of words
-		vector<string> get_next_word_block(int length, int count);
+		void get_next_word_block(vector<string> &block, int length, int count);
 		//function to iterate through the words contained in the data structure
 		string get_next_word(int length);
 		//function to iterate through the words contained in the data structure from a temporary root

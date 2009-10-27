@@ -84,11 +84,11 @@ class data
 		//function to get the statistics for a word
 		virtual scores* get_stats(string motif)=0;
 		//function to return all words that match a regular expression
-		virtual vector<string> get_regex_matches(string regex)=0;
+		virtual void get_regex_matches(vector<string> &matches, string regex)=0;
 		//function to get total count of a regex
 		//virtual pair<string, int> get_regex_counts(string motif)=0;
 		//function to get the sequences from the input file
-		virtual vector<string> get_seq_file()=0;
+		virtual void get_seq_file(vector<string> &sequences)=0;
     
 		//************************************************************
 		//Modifiers
@@ -108,7 +108,7 @@ class data
 		//function to iterate through the words contained in the data structure
 		virtual string get_next_word(int length)=0;
 		//function to get a block of words to process (eliminate contention between threads
-		virtual vector<string> get_next_word_block(int length, int count)=0;
+		virtual void get_next_word_block(vector<string> &block, int length, int count)=0;
 		//function to output information
 		virtual void output()=0;
 		//function to reset last_word variables
