@@ -118,10 +118,10 @@ word_family::word_family(owef_args *input_list,data *structure, word_scoring *mo
     			#ifdef _OPENMP
     			#pragma omp critical
     			{
-	    			word_list = structure->get_next_word_block(i+list->minlength, BLOCK_SIZE);
+	    			structure->get_next_word_block(word_list, i+list->minlength, BLOCK_SIZE);
 			}
 			#else
-			word_list = structure->get_next_word_block(i+list->minlength, BLOCK_SIZE);
+			structure->get_next_word_block(word_list, i+list->minlength, BLOCK_SIZE);
 			#endif
 			
 			int temp_n = list->no_n;
@@ -160,6 +160,7 @@ word_family::word_family(owef_args *input_list,data *structure, word_scoring *mo
 		    			}
 		    		}
 	    		}
+	    		word_list.clear();
   		}
   		ratio_file.close();
   		fam_number += families.size();
@@ -179,7 +180,7 @@ double word_family::create_family(string w,data *structure, word_scoring *model,
 		double covar = 0;
 		double count = 0;
 		vector<string> temp;
-		temp = structure->get_regex_matches(w);
+		structure->get_regex_matches(temp, w);
 		if(static_cast<int>(temp.size() > 1))
 		{
 			for(int i=0; i < static_cast<int>(temp.size()); i++)
@@ -217,6 +218,7 @@ double word_family::create_family(string w,data *structure, word_scoring *model,
 			var += covar;
 			ratio = (count - expect) / std::sqrt(var); // Needs to be (O - E) / sqrt(V)
 		}
+		temp.clear();
   }
 	return ratio;
 }
