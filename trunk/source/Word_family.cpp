@@ -223,6 +223,7 @@ double word_family::create_family(string w,data *structure, word_scoring *model,
 
 double word_family::condAsCoVar(string w1, string w2, int m, data *structure, scores *t, scores *s, word_scoring *model)
 {
+	//printf("word 1: %s, word 2: %s\n", w1.c_str(), w2.c_str());
 	Word word1 = w1;
   	Word word2 = w2;
 	if(word1.number() > word2.number())
@@ -272,22 +273,23 @@ double word_family::condAsCoVar(string w1, string w2, int m, data *structure, sc
 				int strict_cw2 = 0;
 				
 				int q1 = 0;
-
-				string sub = word.substr(i, m);
+				//printf("%s,%d,%d\n", word.c_str(), 0, m);
+				string sub = word.substr(0, m);
+				//printf("here\n");
 				for (int j = 0; j < 4; j++) 
 				{
 					string temp = sub;
 					temp.append(v[j]);
 					q1 += structure->get_count(temp);
-					for (int i = 0; i<static_cast<int> (w1.length() - m); i++) 
+					for (int k = 0; k<static_cast<int> (w1.length() - m); k++) 
 			      		{ 
-						string sub1 = w1.substr(i, m + 1);
+						string sub1 = w1.substr(k, m + 1);
 						if (sub1.compare(temp) == 0)
 							cw1++;
 						if (sub1.compare(word) == 0)
 							strict_cw1++;
 						
-						string sub2 = w2.substr(i, m + 1);
+						string sub2 = w2.substr(k, m + 1);
 						if (sub2.compare(temp) == 0)
 							cw2++;
 						if (sub2.compare(word) == 0)

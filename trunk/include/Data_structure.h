@@ -101,7 +101,7 @@ class data
 		
 		//************************************************************
 		//General Purpose Functions
-		//May do any number of operations, should still be implmented
+		//May do any number of operations, should still be implemented
 		//for each data structure incorporated.
 		//************************************************************
 		
