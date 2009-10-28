@@ -89,14 +89,14 @@ rmes_model::rmes_model(owef_args *input_list,data *structure)
 		structure->reset();
 		
 		#ifdef _OPENMP
-   	#pragma omp parallel for default(none) shared(maxCount, ratio_file, i, structure, order) private(expect_p, j, threadID, next_word, ratio)
-   	#endif
-   	for(j=0; j<list->num_words[i+list->minlength-1]; j++)
-   	{
+   		#pragma omp parallel for default(none) shared(maxCount, ratio_file, i, structure, order) private(expect_p, j, threadID, next_word, ratio)
+   		#endif
+   		for(j=0; j<list->num_words[i+list->minlength-1]; j++)
+   		{
 			#ifdef _OPENMP
 			#pragma omp critical
 	 		{
-	    	next_word = structure->get_next_word(i+list->minlength);
+	    			next_word = structure->get_next_word(i+list->minlength);
 			}
 			#else
 			next_word = structure->get_next_word(i+list->minlength);
@@ -110,23 +110,23 @@ rmes_model::rmes_model(owef_args *input_list,data *structure)
 				structure->set_stats(next_word, word);
 			}	
 				
-      ratio = compute_ratio(word->expect, word->variance, structure->get_count(next_word));
+     	 		ratio = compute_ratio(word->expect, word->variance, structure->get_count(next_word));
       
-      //Computing Compound Poisson Statistics
-      int overlap=0;
-      double fact = 0.0;
-      expect_p = condAsPoissonExpect(next_word,order,word->expect,structure, overlap);
+      			//Computing Compound Poisson Statistics
+      			int overlap=0;
+      			double fact = 0.0;
+      			expect_p = condAsPoissonExpect(next_word,order,word->expect,structure, overlap);
 			double fac_am=0.0;
-      if (overlap > static_cast<int>(next_word.length()) - order || overlap == static_cast<int>(next_word.length()))
+      			if (overlap > static_cast<int>(next_word.length()) - order || overlap == static_cast<int>(next_word.length()))
 			{
-			  fac_am=0.0;
+			  	fac_am=0.0;
 			} 
 			else 
 			{
-			  if (word->expect!=0.0)
-			    fac_am = 1.0-(expect_p/word->expect);
-			  else
-			    fac_am = 1.0 ;
+			  	if (word->expect!=0.0)
+			    		fac_am = 1.0-(expect_p/word->expect);
+			  	else
+			    		fac_am = 1.0 ;
 			}
 
 			double lambda = (( 1.0 - fac_am) * (1.0 - fac_am))* word->expect;
@@ -134,64 +134,58 @@ rmes_model::rmes_model(owef_args *input_list,data *structure)
 			double stat = 0.0;
 			if (fac_am == 0.0) 
 			{
-			  if (structure->get_count(next_word) <= word->expect)
-			    //stat =computeStatPoisson(structure->get_count(next_word),word->expect);
-			    stat = 1;
-			  else
-			    //stat =computeStatPoisson(structure->get_count(next_word)-1,word->expect);
-			    stat = 0;
+			  	if (structure->get_count(next_word) <= word->expect)
+			    		//stat =computeStatPoisson(structure->get_count(next_word),word->expect);
+			    		stat = 1;
+			  	else
+			    		//stat =computeStatPoisson(structure->get_count(next_word)-1,word->expect);
+			    		stat = 0;
 		
-			  if (stat == numeric_limits<double>::infinity()) 
-			  {
-			    //cerr << "Warning in CompoundPoisson estimation. Statistic of word " << next_word << " is infinite." << endl;
-			  }
+			  	if (stat == numeric_limits<double>::infinity()) 
+			  	{
+			  	  	//cerr << "Warning in CompoundPoisson estimation. Statistic of word " << next_word << " is infinite." << endl;
+			  	}
 			}
 			else 
 			{
 				short sign=1;
 				double proba=0.0;
 			  
-//			  for (short l=_lmin;l<=_lmax;l++) 
-//  				maxCount=(_counter->maxCount(l) > maxCount) ? _counter->maxCount(l) : maxCount;
+//			  	for (short l=_lmin;l<=_lmax;l++) 
+//  					maxCount=(_counter->maxCount(l) > maxCount) ? _counter->maxCount(l) : maxCount;
   		
-      	vector<double> loi(maxCount+1);
-      	vector<double> log_fact(maxCount+1);
-      	log_fact[0] = 0.0;
-      	for (long x=1; x <= maxCount; x++)
-  				log_fact[x] = log_fact[x-1] + log(double(x));
+      				vector<double> loi(maxCount+1);
+      				vector<double> log_fact(maxCount+1);
+      				log_fact[0] = 0.0;
+      				for (long x=1; x <= maxCount; x++)
+  					log_fact[x] = log_fact[x-1] + log(double(x));
   	
-			  double aux=log((1.0-fac_am)*(1.0-fac_am)*word->expect/double(fac_am));
-			  loi.resize(maxCount+1);
-			  fill(loi.begin(),loi.end(),0.0);
-			  loi[0]=exp(lambda/(fac_am-1.0));
-			  for (long x=1; x<=maxCount; x++)
-			    for (long y=1; y <= x; y++) 
-			    {
-			      loi[x] += exp(double(x)*log(fac_am)+ log_fact[x-1] - log_fact[y]- log_fact[y-1] - log_fact[x-y]+ double(y)*aux + (fac_am-1.0)*word->expect);
-			    }
-		
-			  if (structure->get_count(next_word) <= word->expect) 
-			  {
-			    sign=-1;
-		
-			    proba= lower_tail(expect_p,fac_am,maxCount) ;
-			  } 
-			  else 
-			  {
-			    sign=1;
-
-			    proba= upper_tail(expect_p,fac_am,maxCount) ;
-			  }
-			  if (proba != numeric_limits<double>::infinity()) 
-			  {
-			    stat=sign*quantile(proba);
-			  } 
-			  else 
-			  {
-			    stat=numeric_limits<double>::infinity();
-			  }
+			  	double aux=log((1.0-fac_am)*(1.0-fac_am)*word->expect/double(fac_am));
+			  	loi.resize(maxCount+1);
+			  	fill(loi.begin(),loi.end(),0.0);
+			  	loi[0]=exp(lambda/(fac_am-1.0));
+			  	for (long x=1; x<=maxCount; x++)
+				{
+			  	  	for (long y=1; y <= x; y++) 
+			    		{
+			      			loi[x] += exp(double(x)*log(fac_am)+ log_fact[x-1] - log_fact[y]- log_fact[y-1] - log_fact[x-y]+ double(y)*aux + (fac_am-1.0)*word->expect);
+			    		}
+				}
+			  	if (structure->get_count(next_word) <= word->expect) 
+			  	{
+			    		sign=-1;
+			    		proba= lower_tail(expect_p,fac_am,maxCount) ;
+			  	} 
+			  	else 
+			  	{
+				    	sign=1;
+			    		proba= upper_tail(expect_p,fac_am,maxCount) ;
+			  	}
+			  	if (proba != numeric_limits<double>::infinity()) 
+			    		stat=sign*quantile(proba);
+			  	else 
+			    		stat=numeric_limits<double>::infinity();
 			}
-			
 			fact=fac_am;
 			#ifdef _OPENMP
 			#pragma omp critical
@@ -203,7 +197,7 @@ rmes_model::rmes_model(owef_args *input_list,data *structure)
 			#endif
 		}
 		ratio_file.close();
-  }
+  	}
 	structure->reset();
 }
 
@@ -471,6 +465,7 @@ double rmes_model::upper_tail(const double lambda, const double a, const long n)
 {
   double z ; /* (theta * lambda / a) */
   double L_prec, L_cour, L_suiv, A_cour, A_suiv, S_cour, S_suiv ;
+  L_suiv = 0;
   long i ;
   bool converged=false ;
 
