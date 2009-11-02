@@ -42,7 +42,7 @@ rmes_model::rmes_model(owef_args *input_list, data *structure, int x)
 
 rmes_model::~rmes_model()
 {
-//no op
+	//no op
 }
 
 rmes_model::rmes_model(owef_args *input_list,data *structure)
@@ -379,8 +379,11 @@ double rmes_model::condAsVar(const Word &w, const short m, const Counter &cc)
 //function to compute all scores of a word
 void rmes_model::compute_scores(scores *word, string &motif, data *structure, int &order)
 {
-	word->expect = condAsExpect(motif,order,structure);
+	double x = condAsExpect(motif,order,structure);
+	//cout << x << endl;
+	word->expect = x;
 	word->variance = condAsVar(motif,order,structure);
+	return;
 }
 
 //*rmes
@@ -517,7 +520,6 @@ double rmes_model::upper_tail(const double lambda, const double a, const long n)
 		return(S_cour * exp(A_cour));
   }
 }
-
 double rmes_model::quantile(const double p)
 {
   static const double c0=2.515515;
@@ -528,12 +530,8 @@ double rmes_model::quantile(const double p)
   static const double d3=0.001308;
 
   static short sign=0;
-
   static double tmp, tmp1, tmp2;
-
   double ret=0.0;
-
-
 
   if (p < 0.0 || p > 1.0 || p == numeric_limits<double>::infinity()) 
   {
@@ -567,10 +565,3 @@ double rmes_model::quantile(const double p)
 
   return ret;
 }
-
-
-
-
-
-
-
