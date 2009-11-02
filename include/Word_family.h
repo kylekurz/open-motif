@@ -46,7 +46,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef WORD_FAMILY
 #define WORD_FAMILY
 
-
+typedef std::vector<double> vecdouble;
 
 class word_family
 {
@@ -59,8 +59,9 @@ class word_family
       ~word_family();
 
     //Make Family
-      double create_family(string w,data *structure, word_scoring *model, int order);
+      vector<double> create_family(string w,data *structure, word_scoring *model, int order, int nseq);
       double condAsCoVar(string w1, string w2, int order, data *structure, scores *t, scores *s, word_scoring *model);
+      void computeProduct(vector<vecdouble> *A, vector<double> *v, vector<double> *res);
 
   protected:
     owef_args *list;      

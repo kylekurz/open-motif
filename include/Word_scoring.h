@@ -67,6 +67,7 @@ class word_scoring
 		
 		//function to compute all scores of a word
 		virtual void compute_scores(scores *word, string &motif, data *structure, int &order)=0;
+		virtual double quantile(const double p)=0;
 		//funtion to provide clustering with seeds
 		virtual vector<pair<string, scores> > get_seeds()=0;
 		

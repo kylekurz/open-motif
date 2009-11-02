@@ -21,7 +21,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <iostream>
-
+#include <limits>
+#include <algorithm>
+#include <cmath>
+#include <iterator>
+#include <memory>
+#include <numeric>
 #include "Word_family.h"
 
 #define BLOCK_SIZE 500
@@ -48,6 +53,11 @@ typedef struct args{
 	vector<string> my_data;
 }args;
 
+typedef std::vector<double> doublevec;
+typedef std::vector<double> vecdouble;
+typedef vector<short> shortvec;
+typedef vector<shortvec> shortmat;
+
 void *processor(void *_Object)
 {
 	args *p = (args *)_Object;
@@ -73,6 +83,16 @@ word_family::~word_family()
 word_family::word_family(owef_args *input_list,data *structure, word_scoring *model)
 {
 	list=input_list;
+	
+	//Computing sequence length
+	int nseq = 0;
+	vector<string> seqs;
+	structure->get_seq_file(seqs);
+	for(int i = 0; i < static_cast<int>(seqs.size());i++)
+	{
+		nseq += seqs[i].length();
+	}
+	cout << "Sequence Length " << nseq << endl;
 	//int no_n = 3;
 	cout << "Creating Word Families with " << list->no_n << " ambigous nucleotides." << endl;	
 	//int nprocs = omp_get_num_procs();
@@ -94,7 +114,7 @@ word_family::word_family(owef_args *input_list,data *structure, word_scoring *mo
 	  	stream_2 <<  list->prefix << "_" << i+list->minlength << "_" << list->order << "_wordfamilies.csv";
 	  	stream_2 >> file_name;
 		ratio_file.open(file_name.c_str());
-  		ratio_file << "Motif,Ratio" << endl;
+  		ratio_file << "Motif,Ratio,CpRatio" << endl;
     
     		vector<string> v;
     		vector<string> families;
@@ -107,7 +127,7 @@ word_family::word_family(owef_args *input_list,data *structure, word_scoring *mo
 		int num_blocks = (i + list->num_words[list->minlength-1]/BLOCK_SIZE) + 1;
 		
 		#ifdef _OPENMP
-    		#pragma omp parallel for default(none) shared(ratio_file, i, structure, model, family_structure, num_blocks) private(j, threadID, families)
+    		#pragma omp parallel for default(none) shared(nseq,ratio_file, i, structure, model, family_structure, num_blocks) private(j, threadID, families)
     		#endif
 		for(j=0; j <num_blocks; j++)
 		{
@@ -142,16 +162,16 @@ word_family::word_family(owef_args *input_list,data *structure, word_scoring *mo
 								if(family_structure->get_count(copy) == 0)
 								{
 									family_structure->inc_count(copy);
-									double ratio = create_family(copy, structure, model, list->order);
-									if(ratio != 0)
+									vector<double> ratio = create_family(copy, structure, model, list->order, nseq);
+									if(ratio.size() > 0)
 									{
 										#ifdef _OPENMP
 										#pragma omp critical
 										{
-											ratio_file << copy << ',' << ratio << endl;
+											ratio_file << copy << ',' << ratio[0] << ',' << ratio[1] << endl;
 										}
 										#else
-										ratio_file << copy << ',' << ratio << endl;
+										ratio_file << copy << ',' << ratio[0] << ',' << ratio[1] << endl;
 										#endif
 									}
 								}
@@ -168,10 +188,12 @@ word_family::word_family(owef_args *input_list,data *structure, word_scoring *mo
 }
 
 
-double word_family::create_family(string w,data *structure, word_scoring *model, int order) 
-{
-	//cout << "creating family " << w << endl;
+vector<double> word_family::create_family(string w,data *structure, word_scoring *model, int order, int nseq) 
+{	
+	//cout << "Family " << w << endl;
+	vector<double> fam_scores;
 	double ratio = 0;
+	double score_cp = 0.0;
 	
 	if(w.length() > 2)
 	{	
@@ -179,6 +201,9 @@ double word_family::create_family(string w,data *structure, word_scoring *model,
 		double var = 0;
 		double covar = 0;
 		double count = 0;
+		double proba = 0.0;
+		int sign = 0;
+		
 		vector<string> temp;
 		structure->get_regex_matches(temp, w);
 		if(static_cast<int>(temp.size() > 1))
@@ -189,11 +214,10 @@ double word_family::create_family(string w,data *structure, word_scoring *model,
 				t = structure->get_stats(temp[i]);
 				if(t == NULL || t->expect == -1 || t->variance == -1)
 				{
+					t = new scores;
 					model->compute_scores(t, temp[i], structure, order);
 					structure->set_stats(temp[i], t);
 				}	
-				
-				
 				
 				expect += t->expect;
 				var += t->variance;
@@ -217,10 +241,242 @@ double word_family::create_family(string w,data *structure, word_scoring *model,
 			
 			var += covar;
 			ratio = (count - expect) / std::sqrt(var); // Needs to be (O - E) / sqrt(V)
+  		
+  		/*
+  		 * Compound Poisson Family Scoring
+  		 */
+  		
+	  	//Integration STATUS
+	  	long wordsPerFamily=temp.size();
+	  	
+		  vector<shortmat> periodpp(wordsPerFamily);
+		  
+		  for(vector<shortmat>::iterator mit=periodpp.begin(); mit != periodpp.end(); mit++) 
+		  {
+		    (*mit).resize(wordsPerFamily);
+		    for (vector<shortvec>::iterator vit=(*mit).begin(); vit != (*mit).end(); vit++)
+					(*vit).resize(w.length()-1);
+		  }			
+
+  		vector<double> espmots(wordsPerFamily);
+  		vector<doublevec> A(wordsPerFamily);
+			
+			for(vector<doublevec>::iterator it=A.begin(); it != A.end(); it++) 
+    		(*it).resize(wordsPerFamily);
+    	    	    	
+	  	for (long wordOneIndex=0; wordOneIndex < wordsPerFamily; wordOneIndex++) 
+	    {
+	    	scores *t = NULL;
+				t = structure->get_stats(temp[wordOneIndex]);
+				espmots[wordOneIndex]=t->expect;
+	
+				for (long wordTwoIndex=0; wordTwoIndex<wordsPerFamily; wordTwoIndex++) 
+				{
+				  for (short d=1; d < (short)w.length(); d++) 
+				  {
+				    periodpp[wordOneIndex][wordTwoIndex][d-1]=0;
+				    Word w1 = temp[wordOneIndex];
+				    Word w2= temp[wordTwoIndex];
+				    auto_ptr<Word> overlapWord(w1.overlaps(w2,d));
+	    			if (overlapWord.get()) 
+	    			{
+	      			bool fail=false;
+	      			if (d>1) 
+	      			{
+								for (short wordThreeIndex=0; wordThreeIndex<wordsPerFamily;wordThreeIndex++) 
+								{
+		  						for (short d2=1; d2<d; d2++) 
+		  						{
+		  							Word w3 = temp[wordThreeIndex];
+								    auto_ptr<Word> overlapWordTwo(w1.overlaps(w3,d2));
+								    auto_ptr<Word> overlapWordThree(w3.overlaps(w2,d-d2));
+		    						if (overlapWordTwo.get() && overlapWordThree.get()) 
+		    						{
+								      fail=true;
+								      break;
+		    						}
+		  						}
+								}
+	      			}
+	      			
+	      			if (!fail) 
+								periodpp[wordOneIndex][wordTwoIndex][d-1]=1;	      
+	    			}	    
+	  			}
+				}
+	    }
+				    		
+	    for (long wordOneIndex=0; wordOneIndex<wordsPerFamily;wordOneIndex++) 
+	    {		
+				for (long wordTwoIndex=0; wordTwoIndex<wordsPerFamily;wordTwoIndex++) 
+				{
+					
+					//Here be seg fault
+				  A[wordOneIndex][wordTwoIndex]=0.0;
+				  short maux=order;
+				  if (!maux)
+	    			maux=1;
+	  
+	    		
+	  			for (short d=1; d<=(short)w.length()-maux;d++) 
+	  			{
+	    			if (periodpp[wordOneIndex][wordTwoIndex][d-1]) 
+	    			{	
+	    				string subword = temp[wordOneIndex].substr(0,order+d-1);   	    				 					    				
+	    				scores *z;
+							z = structure->get_stats(subword);	
+							double ex = 0;
+							if(z == NULL)
+							{
+								z = new scores();
+								int mo = 0;
+								model->compute_scores(z, subword, structure, mo);
+								ex = z->expect;
+							}												
+							
+	      			A[wordOneIndex][wordTwoIndex] += ex;
+	    			}
+	  			}
+	  
+				  if (order == 0)
+				    A[wordOneIndex][wordTwoIndex] /= double(nseq);
+				  else {
+				    double denominator=0.0;
+				    for (short baseIndex=0;baseIndex<Alphabet::alphabet->size();baseIndex++)
+				      denominator += structure->get_count(temp[wordTwoIndex].substr(0,order-1));
+				    A[wordOneIndex][wordTwoIndex] /= denominator;
+				  }
+				  
+				}
+				
+	    }
+	    
+	  	
+
+	  	vector<vecdouble> ImoinsA(wordsPerFamily);
+	    for (vector<vecdouble>::iterator it=ImoinsA.begin();it != ImoinsA.end(); it++)
+				(*it).resize(wordsPerFamily);
+	    
+	    for (long wordOneIndex=0; wordOneIndex < wordsPerFamily;wordOneIndex++)
+				for (long wordTwoIndex=0; wordTwoIndex < wordsPerFamily;wordTwoIndex++)
+		  		if (wordOneIndex == wordTwoIndex)
+		    		ImoinsA[wordOneIndex][wordTwoIndex] = 1 - A[wordOneIndex][wordTwoIndex];
+		  		else
+		    		ImoinsA[wordOneIndex][wordTwoIndex] = - A[wordOneIndex][wordTwoIndex];
+	  	
+	  	vector<double> aux(wordsPerFamily);
+	    computeProduct(&ImoinsA,&espmots,&aux);
+	    double lambda=accumulate(aux.begin(),aux.end(),0.0);
+	    var=lambda;
+	  	
+	  	long xmax=count;
+	    vector<double> lambdak(1+xmax);
+	  	vector<double> auxbis(wordsPerFamily);
+	  	
+	    computeProduct(&ImoinsA,&aux,&auxbis);
+	    copy(auxbis.begin(),auxbis.end(),aux.begin());
+	    for(vector<double>::iterator it=lambdak.begin()+1;it != lambdak.end(); it++) 
+	    {
+				*it = accumulate(aux.begin(),aux.end(),0.0);
+				computeProduct(&A,&aux,&auxbis);
+				copy(auxbis.begin(),auxbis.end(),aux.begin());
+	    }
+	  	//Integration DONE
+	  	vector<vecdouble> D(1+xmax);
+	  	
+	    for (vector<vecdouble>::iterator it=D.begin(); it != D.end(); it++)
+				it->resize(1+xmax);
+	    for (long x=0; x<=xmax; x++)
+				for (long y=0; y<=xmax; y++)
+				  if (x!=y || x==0)
+				    D[x][y]=0;
+				  else
+				    D[x][x] = exp(-lambda)/double(x);
+	
+	    for (long y=1; y<=xmax; y++)
+				for (long x=y+1; x<=xmax; x++) 
+				{
+					double sum=0.0;
+					for (long k=1; k <= x-y; k++)
+					  sum += lambdak[k] * D[x-k][y] * double(k)/double(x);
+					D[x][y]=sum;
+				}
+				
+	  	//What is Loi
+	  	vector<double> loi(xmax+1);
+	    loi[0]=exp(-lambda);
+	    for (long x=1; x<=xmax; x++) 
+	    {
+				double sum=0.0;
+				for (long k=1; k<=x; k++) 
+	  			sum += k * lambdak[k] * D[x][k];
+				loi[x] = sum; 
+	    }	
+	    
+	  	if(count <= expect)
+	  	{
+	  		proba = 0.0;
+	  		sign = -1;
+	  		sort(loi.begin(),loi.end());
+				
+				if (loi.back() <= numeric_limits<double>::min()) 
+				{
+		  		cerr << "Family " << w << " has a p-value too close to 1." << endl << "Hence, it is significantly rare." << endl;
+		  		
+		  		score_cp = -1.0 * numeric_limits<double>::infinity();
+				} 
+				else 
+				{
+		  		for (vector<double>::iterator it=loi.begin();it != loi.end(); it++)
+		    		if (*it <= 1)
+		      		proba+=*it;
+		    		else 
+		    		{
+		      		cerr << "Warning: p-value > 1 for " << w << ": it is however a very under-represented family." << endl;
+		      		break;
+		    		}
+				}
+	  	}
+	  	else
+	  	{
+	  		proba = 1.0;
+	  		sign = +1;
+	  		
+	  		loi.pop_back();
+				
+				sort(loi.begin(),loi.end());
+				for (vector<double>::reverse_iterator rit=loi.rbegin(); rit != loi.rend(); rit++)
+				{
+		    	if (proba - *rit >= 0)
+		    	{
+		      	proba -= *rit;
+		    	}
+		  		else 
+		  		{
+		    		cerr << "Warning: p-value < 0 for "<< w << ": it is however a very over-represented family."<< endl;
+		    		break;
+		  		}
+	  		}
+	  	}
+	  	
+		  if (proba != numeric_limits<double>::infinity())
+		  {
+				score_cp = sign * model->quantile(proba);
+			}
+			else
+			{
+				score_cp = sign * numeric_limits<double>::infinity();
+		  }
+		  
+		  temp.clear();
 		}
-		temp.clear();
-  }
-	return ratio;
+	}
+	
+	fam_scores.push_back(ratio);
+	fam_scores.push_back(score_cp);
+	
+  //cout << "CPRatio " << score_cp << endl << endl;
+	return fam_scores;
 }
 
 double word_family::condAsCoVar(string w1, string w2, int m, data *structure, scores *t, scores *s, word_scoring *model)
@@ -364,3 +620,11 @@ double word_family::condAsCoVar(string w1, string w2, int m, data *structure, sc
 	return covar;
 }
 
+void word_family::computeProduct(vector<vecdouble> *A, vector<double> *v, vector<double> *res)
+{
+  fill (res->begin(),res->end(),0.0);
+  vector<vecdouble>::iterator ALineit=A->begin();
+  for (vector<double>::iterator rit=res->begin();rit != res->end(); rit++, ALineit++)
+    for (vector<double>::iterator AColit=ALineit->begin(),vit=v->begin();AColit != ALineit->end(); AColit++, vit++)
+			*rit += (*AColit)*(*vit);
+}
