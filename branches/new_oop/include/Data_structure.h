@@ -31,6 +31,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 */
  
+#ifndef KKURZ_DATA_STRUCTURE
+#define KKURZ_DATA_STRUCTURE
+
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
@@ -48,8 +51,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "Scores.h"
 #include "OWEF_args.h"
 
-#ifndef KKURZ_DATA_STRUCTURE
-#define KKURZ_DATA_STRUCTURE
+#include "FASTAFile.h"
 
 using namespace std;
 
@@ -89,6 +91,8 @@ class data
 		//virtual pair<string, int> get_regex_counts(string motif)=0;
 		//function to get the sequences from the input file
 		virtual void get_seq_file(vector<string> &sequences)=0;
+
+
     
 		//************************************************************
 		//Modifiers
@@ -99,6 +103,11 @@ class data
 		//function to set the statistics of a word in the trie
 		virtual int set_stats(string motif, scores *new_stats)=0;
 		
+		void setFASTAFile( FASTAFile * fasta_file )
+		{
+			this->fasta_file=fasta_file;
+		}
+
 		//************************************************************
 		//General Purpose Functions
 		//May do any number of operations, should still be implemented
@@ -116,6 +125,7 @@ class data
 	protected:
 		//pointer to the list of input parameters
 		owef_args *list;
+		FASTAFile * fasta_file;
 };
 
 #endif
