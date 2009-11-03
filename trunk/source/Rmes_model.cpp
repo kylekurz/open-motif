@@ -61,15 +61,15 @@ rmes_model::rmes_model(owef_args *input_list,data *structure)
     	order = (i+list->minlength)-2;
   	if(order < 0)
     	order = 0;	
-    double ratio=0.0;
-    double expect_p = 0.0;
-    stringstream stream_2;
-    ofstream ratio_file;
-    string file_name;
-    stream_2 <<  list->prefix << "_" << i+list->minlength << "_" << order << "_ratio.csv";
-    stream_2 >> file_name;
-    ratio_file.open(file_name.c_str());
-    ratio_file << "Word,Word_Count,Expect,Variance,Gauss_Ratio,Poisson_Expect,Lambda,Stat, Fact"<<endl;
+    	double ratio=0.0;
+    	double expect_p = 0.0;
+    	stringstream stream_2;
+    	ofstream ratio_file;
+    	string file_name;
+    	stream_2 <<  list->prefix << "_" << i+list->minlength << "_" << order << "_ratio.csv";
+    	stream_2 >> file_name;
+    	ratio_file.open(file_name.c_str());
+    	ratio_file << "Word,Word_Count,Expect,Variance,Gauss_Ratio,Poisson_Expect,Lambda,Stat, Fact"<<endl;
 
   	int threadID, totalThreads, j;
 		totalThreads = 0;
@@ -87,21 +87,21 @@ rmes_model::rmes_model(owef_args *input_list,data *structure)
 		}
 		
 		structure->reset();
-		
+		ds_iterator *it = new rt_iterator(list, structure, i+list->minlength);
 		#ifdef _OPENMP
-   		#pragma omp parallel for default(none) shared(maxCount, ratio_file, i, structure, order) private(expect_p, j, threadID, next_word, ratio)
+   		#pragma omp parallel for default(none) shared(it, maxCount, ratio_file, i, structure, order) private(expect_p, j, threadID, next_word, ratio)
    		#endif
    		for(j=0; j<list->num_words[i+list->minlength-1]; j++)
    		{
 			#ifdef _OPENMP
 			#pragma omp critical
 	 		{
-	    			next_word = structure->get_next_word(i+list->minlength);
+				if(it->has_next())
+					next_word = it->next();
 			}
 			#else
 			next_word = structure->get_next_word(i+list->minlength);
-			#endif
-				
+			#endif	
 			scores *word = NULL;
 			word = structure->get_stats(next_word);
 			if(word == NULL || word->expect == -1 || word->variance == -1)

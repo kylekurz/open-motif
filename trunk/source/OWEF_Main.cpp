@@ -288,12 +288,35 @@ int main(int argc, char *argv[])
 	//*******************************************************************
 	owef_args *from_input;
 	from_input = new owef_args(count, seq_file, word_length, min_length, min_seqs, min_O, ancestral_filter, N_filter, missing, enumerate, record_seqs, score, order, revcomp, pval, pthr, pthresh, fam, no_n, prefix, parallel, job_log);
+
+	#ifdef KKURZ_MPI
+	
+	//*******************************************************************
+	//initialize the mpi code to create the proper communication 
+	//capabilities
+	//*******************************************************************
+	//cout << "setting up mpi" << endl;
+	int rc = MPI_Init(&argc, &argv);
+	if(rc != MPI_SUCCESS)
+	{
+		printf("Error starting MPI program. Terminating.\n");
+		MPI_Abort(MPI_COMM_WORLD, rc);
+	}
+	
+	MPI_Comm_size(MPI_COMM_WORLD, &(from_input->numtasks));
+	MPI_Comm_rank(MPI_COMM_WORLD, &(from_input->rank));
+	printf("Number of tasks= %d My rank= %d\n", from_input->numtasks, from_input->rank);
+	#endif
 	
 	from_input->write_logs();
 
 	owef *job;
 	job = new owef(from_input);
 	
+	#ifdef KKURZ_MPI
+	if(from_input->rank == 0)
+	{
+	#endif
 	//used to issue commands to the system
 	string cmd;
 	stringstream stream;
@@ -307,7 +330,9 @@ int main(int argc, char *argv[])
 		stream << "_" << from_input->maxlength;
 	if(from_input->score)
 		stream << "_" << from_input->order;
+	stream << "_" << from_input->rank;
 	stream >> directory;
+	
 
 	stream.clear();
 	stream << "mkdir " << directory;
@@ -324,6 +349,21 @@ int main(int argc, char *argv[])
 
 	cout << "Results stored in " << directory << "/\n";
 	cout << "\nRun successful!\n";
-	
+
+	#ifdef KKURZ_MPI
+	}
+	if(from_input->rank == 0)
+	{
+		for(int i=1; i<from_input->numtasks; i++)
+		{
+			char x = 'x';
+			int rc = 0;
+			rc = MPI_Send(&x, 1, MPI_CHAR, i, 0, MPI_COMM_WORLD);
+			//cout << "rc: " << rc << endl;
+		}
+	}
+	MPI_Barrier(MPI_COMM_WORLD);	
+	MPI_Finalize();
+	#endif
 	return EXIT_SUCCESS;
 }

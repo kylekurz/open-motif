@@ -33,6 +33,8 @@ using namespace std;
 
 class radix_trie : public data
 {
+	friend class rt_iterator;
+
 	public:
 		
 		//************************************************************
