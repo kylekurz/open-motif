@@ -2,13 +2,16 @@
  * FASTAFile.h
  *
  *  Created on: Nov 2, 2009
- *      Author: entheogen
+ *      Author: entheogen, lnau
  */
 
 #ifndef FASTAFILE_H_
 #define FASTAFILE_H_
 
+#include <iostream>
+#include <fstream>
 #include <vector>
+#include <string>
 #include "FASTASequence.h"
 
 class FASTAFile

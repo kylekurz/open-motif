@@ -2,7 +2,7 @@
  * FASTASequence.h
  *
  *  Created on: Nov 2, 2009
- *      Author: entheogen
+ *      Author: entheogen, lnau
  */
 
 #ifndef FASTASEQUENCE_H_
@@ -14,17 +14,12 @@ class FASTASequence
 {
 	public:
 		FASTASequence( SequenceString * sequence, std::string & FASTAHeader);
-
-
+		SequenceString * getSeqStr();
+		std::string getHeader();
 
 	private:
 		SequenceString * sequence;
 		std::string header;
-
-
 };
-
-
-
 
 #endif /* FASTASEQUENCE_H_ */
