@@ -35,7 +35,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "Counter.h"
 #include "Word.h"
 #include "Data_structure.h"
+#include "Ds_iterator.h"
 #include "OWEF_args.h"
+#include "Rt_iterator.h"
 #include "Scores.h"
 #include "Word_scoring.h"
 
@@ -61,11 +63,11 @@ class rmes_model :  public word_scoring
       		double compute_ratio(double expect,double variance, int word_count);
     
     
-    double lower_tail(const double lambda, const double a, const long n);
-    double upper_tail(const double lambda, const double a, const long n);
-    double quantile(const double p);
-    //condAsExpect  
-    double  condAsPoissonExpect(const rmes::Word &w,const short m, const double expect, data *structure, int &overlap);
+    		double lower_tail(const double lambda, const double a, const long n);
+    		double upper_tail(const double lambda, const double a, const long n);
+    		double quantile(const double p);
+    		//condAsExpect  
+    		double  condAsPoissonExpect(const rmes::Word &w,const short m, const double expect, data *structure, int &overlap);
 		//condAsExpect
 		double  condAsExpect(const rmes::Word  &w, const short m, data *structure);
 		//condAsVar with data*
@@ -79,15 +81,15 @@ class rmes_model :  public word_scoring
 		//function to compute the Es value of a motif
 		double compute_Es(string &motif, data *structure, int &order);
 		//function to compute the Oln value of a motif
-    double compute_Oln(string &motif, data *structure, int &order);
+    		double compute_Oln(string &motif, data *structure, int &order);
 		//function to compute the Sln value of a motif
-    double compute_Sln(string &motif, data *structure, int &order);
+    		double compute_Sln(string &motif, data *structure, int &order);
 		//function to compute the pval value of a motif
-    double compute_pval(string &motif, data *structure);
+    		double compute_pval(string &motif, data *structure);
 		//function to compute the rank value of a motif  
-    int compute_rank(string &motif, data *structure); 
+    		int compute_rank(string &motif, data *structure); 
 		//function to compute the count value of a motif  
-    int compute_count(string &motif, data *structure);
+    		int compute_count(string &motif, data *structure);
 		//function to compute the seqs value of a motif  
 		int compute_seqs(string &motif, data *structure);                                                    
 		//function to give clustering access to seeds

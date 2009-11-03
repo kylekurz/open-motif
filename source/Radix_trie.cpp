@@ -56,9 +56,10 @@ void* listener(void *_Object)
 {
 	//int flag=0;
 	args *p = (args *)_Object;
-	int length = p->my_list->maxlength+1;
+	int length = (p->my_list->maxlength)+1;
 	int done = 1;
-	int ret, rc;
+	int ret, rc, size;
+	MPI_Comm_size (MPI_COMM_WORLD,&size);
 	char to_count[p->my_list->maxlength+1];
 	MPI_Status status;
 	while(done != 0)
@@ -66,12 +67,11 @@ void* listener(void *_Object)
 		for(int a=0; a<p->my_list->maxlength+1; a++)
 			to_count[a] = (char)NULL;
 		rc = MPI_Recv(&to_count, length, MPI_CHAR, 0, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-		//cout << "rc on slave receive: " << rc << endl;
+		printf("rc on slave receive: %d\n", rc);
 		done = status.MPI_TAG;
 		string test = to_count;
 		if(done == 0)
-		{
-			//cout << "done " << done << endl;		
+		{		
 			MPI_Finalize();
 			exit(0);
 		}
@@ -104,21 +104,21 @@ void* listener(void *_Object)
 //initialized radix trie
 radix_trie::radix_trie(owef_args *from_input)
 {
+	//point to the input parameters
+	list = from_input;
+
 	#ifdef KKURZ_MPI
 	// create new thread for listener, which will wait for requests
-	pthread_t listen_thread;
-	void *x = NULL;
+/*	pthread_t listen_thread;
+//	void *x = NULL;
 	args *p = new args;
 	p->thr_id = 1;
 	p->job = this;	
 	p->my_list = list;
-	pthread_create(&listen_thread, NULL, listener, x);
+	pthread_create(&listen_thread, NULL, listener, (void *)p);*/
 	#endif
 
-	cout << endl << "Creating Radix trie..." << endl << endl;
-
-	//point to the input parameters
-	list = from_input;
+	printf("\nCreating Radix trie...\n");
 	
 	//set up the trie
 	root = NULL;
@@ -156,88 +156,147 @@ radix_trie::radix_trie(owef_args *from_input)
 	
 	#ifndef KKURZ_MPI
 	//print the number of words found to the screen
-	cout << "Number of words of length: " << endl;
+	printf("Number of words of length: \n");
 	for(int i=0; i<list->maxlength; i++)
-		cout << i+1 << " " << list->num_words[i] << endl;
+		printf("%d %d\n", i+1, (int)list->num_words[i]);
 	#else
-	if(list->rank == 0)
+	printf("calculating number of words\n");
+/*	int g;
+	#pragma omp parallel
 	{
-		int word_counts[list->maxlength];
-		for(int h=0; h<list->maxlength; h++)
+   	#pragma omp for nowait private(g)
+	for(g=0; g<2; g++)
+	{
+		if(g == 0)
 		{
-			word_counts[h] += list->num_words[h];
-			int ret;
+			printf("setting up response thread %d\n", list->rank);
+			int length = (list->maxlength)+1;
+			int done = 1;
+			int ret, rc;
+			char to_count[list->maxlength+1];
 			MPI_Status status;
-			string offset;
-			stringstream temp;
-			temp << h;
-			temp >> offset;
-			
-			for(int dest=1; dest<list->numtasks; dest++)
+			while(done != 0)
 			{
-				int rc = MPI_Send(&offset[0], offset.length(), MPI_CHAR, dest, 3, MPI_COMM_WORLD);
-				rc = MPI_Recv(&ret, 1, MPI_INT, dest, 3, MPI_COMM_WORLD, &status); 
-				//cout << "adding: " << ret << endl;
-				word_counts[h] += ret;
+				for(int a=0; a<list->maxlength+1; a++)
+					to_count[a] = (char)NULL;
+				rc = MPI_Recv(&to_count, length, MPI_CHAR, 0, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+				printf("rc on slave receive: %d\n", rc);
+				done = status.MPI_TAG;
+				printf("done %d\n", done);
+				string test = to_count;
+				if(done == 0)
+				{		
+					MPI_Finalize();
+					exit(0);
+				}
+				else if(done == 1)
+				{
+					ret = get_count(test);
+					rc = MPI_Send(&ret, 1, MPI_INT, 0, 1, MPI_COMM_WORLD);
+				}
+				else if(done == 2)
+				{
+					ret = get_seqs(test);
+					rc = MPI_Send(&ret, 1, MPI_INT, 0, 2, MPI_COMM_WORLD);	
+				}
+				else if(done == 3)
+				{
+					int x = atoi(to_count);
+					ret = list->num_words[x];
+					rc = MPI_Send(&ret, 1, MPI_INT, 0, 3, MPI_COMM_WORLD);
+				}
+				else if(done == 4)
+				{
+					scores *s = get_stats(test);
+					rc = MPI_Send(s, 1, MPI_INT, 0, 4, MPI_COMM_WORLD);
+				}
 			}
 		}
-		//print the number of words found to the screen
-		cout << "Number of words of length: " << endl;
-		for(int i=0; i<list->maxlength; i++)
-			cout << i+1 << " " << word_counts[i] << endl;
-		cout << endl;
-		if(list->missing)
+		else
 		{
-			ofstream ofile;
-			stringstream stream;
-			stream <<  list->prefix << "_" << list->maxlength << "_" << list->order << "_missing_scored.csv";
-			string filename;
-			stream >> filename;
-			ofile.open(filename.c_str());
-			ofile << "#Word" << endl;
-			miss_search(root, ofile, list->maxlength, "");
-			ofile.close();
-		}
+*/			if(list->rank == 0)
+			{
+				sleep(2);
+				int word_counts[list->maxlength];
+				for(int h=0; h<list->maxlength; h++)
+				{
+					word_counts[h] = list->num_words[h];
+					int ret;
+					MPI_Status status;
+					string offset;
+					stringstream temp;
+					temp << h;
+					temp >> offset;
+					printf("calling remote counts\n");
+					for(int dest=1; dest<list->numtasks; dest++)
+					{
+						printf("calling %d\n", dest);
+						int rc = MPI_Send(&offset[0], offset.length(), MPI_CHAR, dest, 3, MPI_COMM_WORLD);
+						rc = MPI_Recv(&ret, 1, MPI_INT, dest, 3, MPI_COMM_WORLD, &status); 
+						printf("adding: %d\n",ret);
+						word_counts[h] += ret;
+					}
+				}
+				//print the number of words found to the screen
+				cout << "Number of words of length: " << endl;
+				for(int i=0; i<list->maxlength; i++)
+					printf("%d %d\n", i+1, word_counts[i]);
+				cout << endl;
+				if(list->missing)
+				{
+					ofstream ofile;
+					stringstream stream;
+					stream <<  list->prefix << "_" << list->maxlength << "_" << list->order << "_missing_scored.csv";
+					string filename;
+					stream >> filename;
+					ofile.open(filename.c_str());
+					ofile << "#Word" << endl;
+					miss_search(root, ofile, list->maxlength, "");
+					ofile.close();
+				}
+			}
+			if(list->rank != 0)
+			{
+		
+				int length = list->maxlength+1;
+				int done = 1;
+				int ret, rc;
+				char to_count[list->maxlength+1];
+				MPI_Status status;
+				while(done != 0)
+				{
+					for(int a=0; a<list->maxlength+1; a++)
+						to_count[a] = (char)NULL;
+					rc = MPI_Recv(&to_count, length, MPI_CHAR, 0, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+					//cout << "rc on slave receive: " << rc << endl;
+					done = status.MPI_TAG;
+					string test = to_count;
+					if(done == 0)
+					{
+						//cout << "done " << done << endl;		
+						//MPI_Finalize();
+						//exit(0);
+					}
+					else if(done == 1)
+					{
+						ret = get_count(test);
+						rc = MPI_Send(&ret, 1, MPI_INT, 0, 1, MPI_COMM_WORLD);
+					}
+					else if(done == 2)
+					{
+						ret = get_seqs(test);
+						rc = MPI_Send(&ret, 1, MPI_INT, 0, 2, MPI_COMM_WORLD);	
+					}
+					else if(done == 3)
+					{
+						int x = atoi(to_count);
+						ret = list->num_words[x];
+						rc = MPI_Send(&ret, 1, MPI_INT, 0, 3, MPI_COMM_WORLD);
+					}
+				}
+			}	
+		/*}
 	}
-	/*
-	if(list->rank != 0)
-	{
-		int length = list->maxlength+1;
-		int done = 1;
-		int ret, rc;
-		char to_count[list->maxlength+1];
-		MPI_Status status;
-		while(done != 0)
-		{
-			for(int a=0; a<list->maxlength+1; a++)
-				to_count[a] = (char)NULL;
-			rc = MPI_Recv(&to_count, length, MPI_CHAR, 0, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-			//cout << "rc on slave receive: " << rc << endl;
-			done = status.MPI_TAG;
-			string test = to_count;
-			if(done == 0)
-			{
-				//cout << "done " << done << endl;		
-				MPI_Finalize();
-				exit(0);
-			}
-			else if(done == 1)
-			{
-				ret = get_count(test);
-				rc = MPI_Send(&ret, 1, MPI_INT, 0, 1, MPI_COMM_WORLD);
-			}
-			else if(done == 2)
-			{
-				ret = get_seqs(test);
-				rc = MPI_Send(&ret, 1, MPI_INT, 0, 2, MPI_COMM_WORLD);	
-			}
-			else if(done == 3)
-			{
-				int x = atoi(to_count);
-				ret = list->num_words[x];
-				rc = MPI_Send(&ret, 1, MPI_INT, 0, 3, MPI_COMM_WORLD);
-			}
-		}
 	}*/
 	#endif
 	if(!list->score)
@@ -261,14 +320,14 @@ int radix_trie::get_count(string motif)
 	int ret_count = 1;
 	int dest = locate_branch(motif[0]);
 	int ret, rc;
-	MPI_Status *status = NULL;
+	MPI_Status status;
 	//compute all the necessary scores
 	//cout << " count: count " << count << " dest " << dest << " motif " << motif << endl;
 	if(dest != list->rank)
 	{
 		//motif = unconvert(motif);
 		rc = MPI_Send(&motif[0], count, MPI_CHAR, dest, 1, MPI_COMM_WORLD);
-		rc = MPI_Recv(&ret, ret_count, MPI_INT, dest, 1, MPI_COMM_WORLD, status); 
+		rc = MPI_Recv(&ret, ret_count, MPI_INT, dest, 1, MPI_COMM_WORLD, &status); 
 		return ret;
 	}
 	else
@@ -287,13 +346,13 @@ int radix_trie::get_seqs(string motif)
 	int ret_count = 1;
 	int dest = locate_branch(motif[0]);
 	int ret, rc;
-	MPI_Status *status = NULL;
+	MPI_Status status;
 	//compute all the necessary scores
 	if(dest != list->rank)
 	{
 		//motif = unconvert(motif);
 		rc = MPI_Send(&motif[0], count, MPI_CHAR, dest, 2, MPI_COMM_WORLD);
-		rc = MPI_Recv(&ret, ret_count, MPI_INT, dest, 2, MPI_COMM_WORLD, status); 
+		rc = MPI_Recv(&ret, ret_count, MPI_INT, dest, 2, MPI_COMM_WORLD, &status); 
 		return ret;
 	}
 	else
@@ -312,13 +371,13 @@ scores* radix_trie::get_stats(string motif)
 	int ret_count = 1;
 	int dest = locate_branch(motif[0]);
 	int ret, rc;
-	MPI_Status *status = NULL;
+	MPI_Status status;
 	//compute all the necessary scores
 	if(dest != list->rank)
 	{
 		//motif = unconvert(motif);
 		rc = MPI_Send(&motif[0], count, MPI_CHAR, dest, 4, MPI_COMM_WORLD);
-		rc = MPI_Recv(&ret, ret_count, MPI_INT, dest, 4, MPI_COMM_WORLD, status); 
+		rc = MPI_Recv(&ret, ret_count, MPI_INT, dest, 4, MPI_COMM_WORLD, &status); 
 		return (scores *)ret;
 	}
 	else

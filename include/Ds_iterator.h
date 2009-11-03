@@ -45,6 +45,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <time.h>
 #include <vector>
 
+#include "Data_structure.h"
 #include "OWEF_args.h"
 
 #ifndef KKURZ_DS_ITERATOR
@@ -62,42 +63,17 @@ class ds_iterator
 		
 		//standard constructor
 		ds_iterator();
+
+		//initialized constructor
+		ds_iterator(owef_args *from_input, data *structure, int wordlength);
 		
 		//standard destructor
 		virtual ~ds_iterator()=0;
-		
-		//************************************************************
-		//Accessors
-		//All accessors simply return the value of their associated
-		//variable.  No modifications allowed.
-		//************************************************************
-		
-		//function to get word count
-		virtual int get_count()=0;
-		//function to get sequence count
-		virtual int get_seqs()=0;
-		//function to get the statistics for a word
-		virtual scores* get_stats()=0;
-    
-		//************************************************************
-		//Modifiers
-		//All modifiers return their new value by default.  This may
-		//be ignored based on developer preference.
-		//************************************************************
 
-		//function to set the statistics of a word in the trie
-		virtual int set_stats(scores *new_stats)=0;
-		
-		//************************************************************
-		//General Purpose Functions
-		//May do any number of operations, should still be implemented
-		//for each data structure incorporated.
-		//************************************************************
-		
-		//function to iterate through the words contained in the data structure
-		virtual string get_next_word(int length)=0;
-		//function to get a block of words to process (eliminate contention between threads
-		virtual void get_next_word_block(vector<string> &block, int length, int count)=0;
+		//iterator information
+		virtual bool has_next()=0;
+		virtual string next()=0;
+
 	protected:
 		//pointer to the list of input parameters
 		owef_args *list;

@@ -51,10 +51,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <vector>
 
 #include "Data_structure.h"
+#include "Ds_iterator.h"
 #include "Module_discovery.h"
 #include "OWEF_args.h"
 #include "Radix_trie.h"
 #include "Rmes_model.h"
+#include "Rt_iterator.h"
 #include "Scores.h"
 #include "Word_family.h"
 #include "Word_scoring.h"
