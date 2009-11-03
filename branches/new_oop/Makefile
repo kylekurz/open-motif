@@ -40,7 +40,7 @@ OBJDIR := $(if $(filter yes,$(DEBUG)),debug,release)
 INCLUDE_DIRECTORIES = include
 CPPFLAGS += $(addprefix -I ,$(INCLUDE_DIRECTORIES))
 
-SRCS := lev_suffix_tree_test.cpp FASTAFile.cpp FASTASequence.cpp Alphabet.cpp Cluster.cpp Counter.cpp Data_structure.cpp DNAAlphabet.cpp GFF_generator.cpp Motif.cpp Motif_logo.cpp Motif_scoring.cpp OWEF_args.cpp OWEF.cpp Radix_trie.cpp Radix_trie_leaf.cpp Radix_trie_node.cpp Rmes_model.cpp RMESString.cpp Scores.cpp Word.cpp Word_family.cpp Word_scoring.cpp 
+SRCS := lev_suffix_tree_test.cpp FASTAFile.cpp FASTASequence.cpp Alphabet.cpp Cluster.cpp Counter.cpp Data_structure.cpp DNAAlphabet.cpp GFF_generator.cpp Motif.cpp Motif_logo.cpp Motif_scoring.cpp OWEF_args.cpp OWEF.cpp Radix_trie.cpp Radix_trie_leaf.cpp Radix_trie_node.cpp Rmes_model.cpp RMESString.cpp Scores.cpp Word.cpp Word_family.cpp Word_scoring.cpp NewMain.cpp
 #SRCS := $(addprefix $(SRCDIR)/,$(SRCS))
 OBJS := $(addprefix $(OBJDIR)/,$(SRCS:.cpp=.o))
 
