@@ -7,11 +7,12 @@
 
 #include "SuffixTreeIterator.h"
 
+SuffixTreeIterator::~SuffixTreeIterator(){}
 
 std::string SuffixTreeIterator::next()
 {
 	using namespace std;
-
+	if( counter >= string_words.size() )counter=0;
 	return this->string_words[counter++];
 	/*
 	 if (q.empty())
@@ -97,7 +98,7 @@ void SuffixTreeIterator::populate( SNode *node, std::vector<SequenceString*> & w
 
 */
 
-void SuffixTreeIterator::populate_string( SNode *node, std::vector<std::string> & string_words, std::string curr_word, index_type rec )
+void SuffixTreeIterator::populate_string( SuffixTreeNode *node, std::vector<std::string> & string_words, std::string curr_word, index_type rec )
 {
 	using namespace std;
 	index_type node_size = (node->str_b - node->str_a) + 1;

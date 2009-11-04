@@ -10,6 +10,8 @@
 
 #include "SuffixTree.cpp"
 #include "SuffixTreeIterator.cpp"
+#include "Data_structure.cpp"
+#include "Ds_iterator.cpp"
 #include <sys/timeb.h>
 
 using namespace std;
@@ -21,6 +23,7 @@ int getTimeSpan( timeb & start, timeb & end )
 		return end.millitm - start.millitm;
 	return (end.time - (start.time + 1)) * 1000 + (1000 - start.millitm) + end.millitm;
 }
+
 
 int main( int argc, char ** argv )
 {
@@ -54,7 +57,7 @@ int main( int argc, char ** argv )
 	timeb build_tree_end;
 	ftime( &build_tree_end );
 	cout << "Building suffix tree took " << getTimeSpan( build_tree_start, build_tree_end ) << " milliseconds" << endl;
-	cout<<"There were "<<SNODE_COUNT<<" nodes created, which take up "<<(sizeof( struct SNode)*SNODE_COUNT)<<" bytes"<<endl;
+	//cout<<"There were "<<SNODE_COUNT<<" nodes created, which take up "<<(sizeof( struct SuffixTreeNode)*SNODE_COUNT)<<" bytes"<<endl;
 
 	timeb naive_count_start;
 	ftime( &naive_count_start );
@@ -92,6 +95,8 @@ int main( int argc, char ** argv )
 
 	while( iter.hasNext())
 	{
-		cout<<"'"<<iter.next()<<"'"<<endl;
+	//	cout<<"'"<<iter.next()<<"'"<<endl;
+	//	cout<<"'"<<stree.get_next_word(2)<<"'"<<endl;
 	}
 }
+

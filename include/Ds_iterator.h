@@ -46,6 +46,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <vector>
 
 #include "OWEF_args.h"
+#include "Scores.h"
 
 #ifndef KKURZ_DS_ITERATOR
 #define KKURZ_DS_ITERATOR

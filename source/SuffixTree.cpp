@@ -6,6 +6,7 @@
  */
 
 #include "SuffixTree.h"
+#include "SuffixTreeIterator.h"
 #include <fstream>
 #include <iostream>
 #include <cstdlib>
@@ -23,6 +24,26 @@ SuffixTree::~SuffixTree()
 {
 
 }
+
+SuffixTree::SuffixTree(owef_args *list)
+		{
+			using namespace std;
+			this->list=list;
+			if(SUFFIX_TREE_DEBUG_ON)
+				cout<<"Reading file"<<endl;
+			readFile(list->seq_file.c_str());
+			if(SUFFIX_TREE_DEBUG_ON)
+				cout<<"Building Suffix Tree"<<endl;
+			buildSTree();
+			if(SUFFIX_TREE_DEBUG_ON)
+				cout<<"done building Suffix Tree"<<endl;
+
+			for( int i = 1; i<= list->maxlength; ++i )
+			{
+					SuffixTreeIterator iter(this,i);
+					list->num_words[i]=iter.string_words.size();
+			}
+		}
 
 index_type getFileSize( const char * file_name )
 {
@@ -92,7 +113,7 @@ void SuffixTree::buildSTree()
 {
 	using namespace std;
 #ifndef USE_CUSTOM_NEW
-	root = new SNode();
+	root = new SuffixTreeNode();
 #else
 	root = NewSNode();
 #endif
@@ -134,11 +155,11 @@ void SuffixTree::insertSuffix( index_type a )
 #endif
 
 	int offset = SuffixTreeCompOffset( text[a] );
-	SNode * root_suffix = root->children[offset];
+	SuffixTreeNode * root_suffix = root->children[offset];
 	if (root_suffix == NULL)
 	{
 #ifndef USE_CUSTOM_NEW
-		root->children[offset] = new SNode();
+		root->children[offset] = new SuffixTreeNode();
 #else
 		root->children[offset] = NewSNode();
 #endif
@@ -155,7 +176,7 @@ void SuffixTree::insertSuffix( index_type a )
 		{
 			if (t == root_suffix->str_b)
 			{
-				SNode * new_p = NULL;
+				SuffixTreeNode * new_p = NULL;
 				offset = SuffixTreeCompOffset( text[++t1] );
 				if (offset == -1)
 					return;
@@ -166,9 +187,9 @@ void SuffixTree::insertSuffix( index_type a )
 				if (new_p == NULL)
 				{
 #ifndef USE_CUSTOM_NEW
-					SNode * new_node = new SNode();
+					SuffixTreeNode * new_node = new SuffixTreeNode();
 #else
-					SNode * new_node = NewSNode();
+					SuffixTreeNode * new_node = NewSNode();
 #endif
 					new_node->str_a = t1;
 					new_node->str_b = text_size - 1;
@@ -189,18 +210,18 @@ void SuffixTree::insertSuffix( index_type a )
 			++t1;
 		}
 #ifndef USE_CUSTOM_NEW
-		SNode * new_child = new SNode();
+		SuffixTreeNode * new_child = new SuffixTreeNode();
 #else
-		SNode * new_child = NewSNode();
+		SuffixTreeNode * new_child = NewSNode();
 #endif
 		new_child->str_a = t1;
 		new_child->str_b = text_size - 1;
 		new_child->t = a;
 
 #ifndef USE_CUSTOM_NEW
-		SNode * second_half = new SNode();
+		SuffixTreeNode * second_half = new SuffixTreeNode();
 #else
-		SNode * second_half = new SNode();
+		SuffixTreeNode * second_half = new SuffixTreeNode();
 #endif
 		second_half->str_a = t;
 		second_half->str_b = root_suffix->str_b;
@@ -243,7 +264,7 @@ void SuffixTree::insertSuffix( index_type a )
 index_type SuffixTree::count( std::string needle )
 {
 	using namespace std;
-	SNode * walka = root->children[SuffixTreeCompOffset( needle[0] )];
+	SuffixTreeNode * walka = root->children[SuffixTreeCompOffset( needle[0] )];
 	if (walka == NULL)
 		return 0;
 	index_type t = walka->str_a;
@@ -315,7 +336,17 @@ void SuffixTree::genRandom( int length )
 #endif
 }
 
-
+std::string SuffixTree::get_next_word(int length )
+{
+using namespace std;
+	{
+		if( iterators.find(length)==iterators.end())
+		{
+			iterators[length]=new SuffixTreeIterator(this,length);
+		}
+		return iterators[length]->next();
+	}
+}
 
 std::string genTabs( int t )
 {
@@ -325,7 +356,7 @@ std::string genTabs( int t )
 	return s;
 }
 
-void SuffixTree::printNode( SNode *node, int rec )
+void SuffixTree::printNode( SuffixTreeNode *node, int rec )
 {
 	using namespace std;
 	string t = genTabs( rec );
@@ -352,17 +383,17 @@ unsigned long long __new_op_end;
 char * __new_op_curr_free = NULL;
 char * __new_op_buff = NULL;
 
-SNode *SuffixTree::NewSNode()
+SuffixTreeNode *SuffixTree::NewSNode()
 {
-	if ((__new_op_buff + __new_alloc_chunk - __new_op_curr_free < sizeof(SNode)) || __new_op_buff == NULL)
+	if ((__new_op_buff + __new_alloc_chunk - __new_op_curr_free < sizeof(SuffixTreeNode)) || __new_op_buff == NULL)
 	{
 		__new_op_buff = (char*)sbrk(__new_alloc_chunk);//(char*) malloc( __new_alloc_chunk );
 		//	memset( __new_op_buff, 0, __new_alloc_chunk );
 		__new_op_curr_free = __new_op_buff;
 	}
-	SNode*ret = (SNode*) __new_op_curr_free;
+	SuffixTreeNode*ret = (SuffixTreeNode*) __new_op_curr_free;
 	ret->init();
-	__new_op_curr_free += sizeof(SNode);
+	__new_op_curr_free += sizeof(SuffixTreeNode);
 	return ret;
 }
 #endif
