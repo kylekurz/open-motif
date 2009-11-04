@@ -41,8 +41,11 @@ ds_iterator::ds_iterator()
 	//no-op
 }
 
+
+
 //standard destructor
 ds_iterator::~ds_iterator()
 {
-	list = NULL:
+	list = NULL;
 }
+

@@ -32,6 +32,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "OWEF.h"
 
+
 using namespace std;
 
 //standard constructor
@@ -43,7 +44,6 @@ owef::owef()
 //initialized constructor
 owef::owef(owef_args *from_input)
 {
-	
 	list = from_input;
 	//int t_num;
 	//pthread_t threads[NUM_THREADS];
@@ -53,7 +53,8 @@ owef::owef(owef_args *from_input)
 	start = clock();
 	if(list->count)
 	{
-		structure = new radix_trie(list);
+		//structure = new radix_trie(list);
+		structure = new SuffixTree(list);
 	}
 	end = clock();
 	duration = (double)(end-start)/CLOCKS_PER_SEC;

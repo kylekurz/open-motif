@@ -59,6 +59,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "Word_family.h"
 #include "Word_scoring.h"
 
+#include "SuffixTree.h"
 
 
 

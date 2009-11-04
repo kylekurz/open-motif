@@ -15,12 +15,19 @@
 #include <stack>
 #include <iostream>
 #include <list>
+#include <map>
+
+#include "Data_structure.h"
+//#include "SuffixTreeIterator.h"
 
 //#define USE_CUSTOM_NEW
+
+const bool SUFFIX_TREE_DEBUG_ON=true;
 
 #define d_print(x) std::cout<<#x<<" = "<<(x)<<std::endl;
 
 typedef unsigned int index_type;
+
 
 
 inline int SuffixTreeCompOffset( char a )
@@ -49,9 +56,9 @@ inline int SuffixTreeCompOffset( char a )
 const int NUM_CHAR = 5;
 const index_type NOT_LEAF = (index_type) ((unsigned long long) 1 << 32) - 1;
 
-unsigned long long SNODE_COUNT = 0;
+//unsigned long long SNODE_COUNT = 0;
 
-struct SNode
+struct SuffixTreeNode
 {
 		/**
 		 * instead of storing string, store indices into text
@@ -65,16 +72,16 @@ struct SNode
 		 */
 		index_type t;
 		index_type num_leafs;
-		SNode ** children;
-		SNode()
+		SuffixTreeNode ** children;
+		SuffixTreeNode()
 		{
 			init();
 		}
 
 		void init()
 		{
-			++SNODE_COUNT;
-			children = new SNode*[NUM_CHAR];
+			//++SNODE_COUNT;
+			children = new SuffixTreeNode*[NUM_CHAR];
 			num_leafs = NOT_LEAF;
 			for (int i = 0; i < 5; ++i)
 			{
@@ -124,11 +131,11 @@ struct SNode
 		{
 			using namespace std;
 			index_type count = 0;
-			queue<SNode*> q;
+			queue<SuffixTreeNode*> q;
 			q.push( this );
 			while (!q.empty())
 			{
-				SNode * t = q.front();
+				SuffixTreeNode * t = q.front();
 				q.pop();
 				if (t->isLeaf())
 					++count;
@@ -147,10 +154,11 @@ struct SNode
 
 class SuffixTreeIterator;
 
-class SuffixTree
+class SuffixTree: public data
 {
 	public:
 		SuffixTree();
+		SuffixTree(owef_args *list);
 		virtual ~SuffixTree();
 
 		void readFile( const char * file_name );
@@ -161,7 +169,7 @@ class SuffixTree
 		index_type naiveCount( std::string needle );
 		index_type count( std::string needle );
 
-		void printNode( SNode * node, int rec );
+		void printNode( SuffixTreeNode * node, int rec );
 
 		//	std::vector<char> text;
 		char * text;
@@ -169,15 +177,84 @@ class SuffixTree
 
 		friend class SuffixTreeIterator;
 
+		/**
+		 * Virtual classes from data class.
+		 */
+
+		//************************************************************
+		//Accessors
+		//All accessors simply return the value of their associated
+		//variable.  No modifications allowed.
+		//************************************************************
+
+		//function to get word count
+		virtual int get_count( string motif )
+		{
+			return count(motif);
+		}
+		//function to get sequence count
+		virtual int get_seqs( string motif )
+		{
+			return get_count(motif)==0?0:1;
+		}
+		//function to get the statistics for a word
+		virtual scores* get_stats( string motif )
+		{
+			if( scorez.find(motif)==scorez.end())return NULL;
+			return scorez[motif];
+		}
+		//function to return all words that match a regular expression
+		virtual void get_regex_matches( vector<string> &matches, string regex )
+		{
+
+		}
+
+
+		//************************************************************
+		//Modifiers
+		//All modifiers return their new value by default.  This may
+		//be ignored based on developer preference.
+		//************************************************************
+
+		//function to set the statistics of a word in the trie
+		virtual int set_stats( string motif, scores *new_stats )
+		{
+			scorez[motif]=new_stats;
+			return 1;
+		}
+
+		//************************************************************
+		//General Purpose Functions
+		//May do any number of operations, should still be implemented
+		//for each data structure incorporated.
+		//************************************************************
+
+		//function to iterate through the words contained in the data structure
+		virtual string get_next_word( int length );
+		//function to get a block of words to process (eliminate contention between threads
+		virtual void get_next_word_block( vector<string> &block, int length, int count )
+		{
+
+		}
+		//function to output information
+		virtual void output()
+		{
+
+		}
+		//function to reset last_word variables
+		virtual void reset()
+		{
+
+		}
+
 	private:
-		SNode * root;
-
+		SuffixTreeNode * root;
 		void insertSuffix( index_type a );
-		SNode * getNode( unsigned long long a, unsigned long long b );
+		SuffixTreeNode * getNode( unsigned long long a, unsigned long long b );
+		SuffixTreeNode * NewSNode();
 
-		SNode * NewSNode();
+		std::map<int,SuffixTreeIterator*> iterators;
+		std::map<std::string,scores*> scorez;
 };
-
-
 
 #endif /* SUFFIXTREE_H_ */
