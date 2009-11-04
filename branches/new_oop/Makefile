@@ -15,7 +15,7 @@
 #
 #****************************************************************
 
-CPPFLAGS = -O2 -Wall -Werror -DKKURZ_MPI
+CPPFLAGS = -O2 -Wall -Werror -DKKURZ_MPI -ggdb
 CC = mpicxx
 MAIN = source/OWEF_Main.cpp
 PLAT = seq
@@ -29,7 +29,7 @@ endif
 
 ifeq ($(PLAT),seq)
 CC = g++
-CPPFLAGS = -Wall -Werror -O3 -fopenmp
+CPPFLAGS = -Wall -Werror -O3 -fopenmp -ggdb
 endif
 
 SRCDIR := source
@@ -38,16 +38,16 @@ OBJDIR := $(if $(filter yes,$(DEBUG)),debug,release)
 
 
 INCLUDE_DIRECTORIES = include
-CPPFLAGS += $(addprefix -I ,$(INCLUDE_DIRECTORIES))
+CPPFLAGS += $(addprefix -I ,$(INCLUDE_DIRECTORIES)) -ggdb
 
-SRCS := lev_suffix_tree_test.cpp FASTAFile.cpp FASTASequence.cpp Alphabet.cpp Cluster.cpp Counter.cpp Data_structure.cpp DNAAlphabet.cpp GFF_generator.cpp Motif.cpp Motif_logo.cpp Motif_scoring.cpp OWEF_args.cpp OWEF.cpp Radix_trie.cpp Radix_trie_leaf.cpp Radix_trie_node.cpp Rmes_model.cpp RMESString.cpp Scores.cpp Word.cpp Word_family.cpp Word_scoring.cpp NewMain.cpp
+SRCS := SuffixTree.cpp SuffixTreeIterator.cpp Ds_iterator.cpp FASTAFile.cpp FASTASequence.cpp Alphabet.cpp Cluster.cpp Counter.cpp Data_structure.cpp DNAAlphabet.cpp GFF_generator.cpp Motif.cpp Motif_logo.cpp Motif_scoring.cpp OWEF_args.cpp OWEF.cpp Radix_trie.cpp Radix_trie_leaf.cpp Radix_trie_node.cpp Rmes_model.cpp RMESString.cpp Scores.cpp Word.cpp Word_family.cpp Word_scoring.cpp 
 #SRCS := $(addprefix $(SRCDIR)/,$(SRCS))
 OBJS := $(addprefix $(OBJDIR)/,$(SRCS:.cpp=.o))
 
 all: $(OBJS)
 
 install: $(OBJS)
-	$(CC) -o $(PROJ) $(CPPFLAGS) $(MAIN) $^ -lpthread
+	$(CC) -o $(PROJ) $(CPPFLAGS) $(MAIN) $^ -lpthread -ggdb
 	
 lev_test:
 	g++ source/lev_suffix_tree_test.cpp $(CPPFLAGS) -ostree -O3
@@ -55,7 +55,7 @@ lev_test:
 ifeq ($(OBJDIR),debug)
 all: CPPFLAGS = -Wall -g -pg
 all: CPPFLAGS += $(addprefix -I ,$(INCLUDE_DIRECTORIES))
-install: CPPFLAGS = -Wall -g -pg
+install: CPPFLAGS = -Wall -g -pg -ggdb
 install: CPPFLAGS += $(addprefix -I ,$(INCLUDE_DIRECTORIES))
 endif
 
