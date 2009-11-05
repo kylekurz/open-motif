@@ -28,6 +28,11 @@ class SuffixTreeIterator: public ds_iterator
 			return string_words.size();
 		}
 
+		void reset()
+		{
+			counter=0;
+		}
+
 		/**
 		 * VIRTUAL METHODz
 		 */
@@ -41,7 +46,7 @@ class SuffixTreeIterator: public ds_iterator
 		//function to get word count
 		virtual int get_count()
 		{
-			return -1;
+			return string_words.size();
 		}
 		//function to get sequence count
 		virtual int get_seqs()

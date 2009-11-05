@@ -86,30 +86,31 @@ rmes_model::rmes_model( owef_args *input_list, data *structure )
 		}
 
 		structure->reset();
-/*
-#ifdef _OPENMP
-#pragma omp parallel for default(none) shared(maxCount, ratio_file, i, structure, order) private(expect_p, j, threadID, next_word, ratio)
-#endif
-*/
+		/*
+		 #ifdef _OPENMP
+		 #pragma omp parallel for default(none) shared(maxCount, ratio_file, i, structure, order) private(expect_p, j, threadID, next_word, ratio)
+		 #endif
+		 */
 		for (j = 0; j < list->num_words[i + list->minlength - 1]; j++)
 		{
-/*
-#ifdef _OPENMP
-#pragma omp critical
+			/*
+			 #ifdef _OPENMP
+			 #pragma omp critical
 
-			{
-				next_word = structure->get_next_word(i+list->minlength);
-			}
-#else
-*/
+			 {
+			 next_word = structure->get_next_word(i+list->minlength);
+			 }
+			 #else
+			 */
 			next_word = structure->get_next_word( i + list->minlength );
-//#endif
+			//#endif
 
 			scores *word = NULL;
 			word = structure->get_stats( next_word );
 			if (word == NULL || word->expect == -1 || word->variance == -1)
 			{
-				if(word==NULL)word=new scores;
+				if (word == NULL)
+					word = new scores;
 				compute_scores( word, next_word, structure, order );
 
 				structure->set_stats( next_word, word );
@@ -193,16 +194,16 @@ rmes_model::rmes_model( owef_args *input_list, data *structure )
 			}
 			fact = fac_am;
 			/*
-#ifdef _OPENMP
-#pragma omp critical
-			{
-				ratio_file << next_word << "," << structure->get_count(next_word) << "," << word->expect << "," << word->variance << "," << ratio << "," << expect_p << "," << lambda << "," << stat << "," << fact << endl;
-			}
-#else
-*/
+			 #ifdef _OPENMP
+			 #pragma omp critical
+			 {
+			 ratio_file << next_word << "," << structure->get_count(next_word) << "," << word->expect << "," << word->variance << "," << ratio << "," << expect_p << "," << lambda << "," << stat << "," << fact << endl;
+			 }
+			 #else
+			 */
 			ratio_file << next_word << "," << structure->get_count( next_word ) << "," << word->expect << "," << word->variance << "," << ratio << "," << expect_p << "," << lambda << "," << stat
 					<< "," << fact << endl;
-//#endif
+			//#endif
 		}
 
 		ratio_file.close();

@@ -397,3 +397,13 @@ SuffixTreeNode *SuffixTree::NewSNode()
 	return ret;
 }
 #endif
+
+
+void SuffixTree::reset()
+{
+	using namespace std;
+	for( map<int,SuffixTreeIterator*>::iterator i =  iterators.begin(); i != iterators.end(); ++i  )
+	{
+		i->second->reset();
+	}
+}

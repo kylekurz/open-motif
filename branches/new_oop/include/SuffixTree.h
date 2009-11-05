@@ -242,10 +242,7 @@ class SuffixTree: public data
 
 		}
 		//function to reset last_word variables
-		virtual void reset()
-		{
-
-		}
+		virtual void reset();
 
 	private:
 		SuffixTreeNode * root;
