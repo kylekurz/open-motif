@@ -51,6 +51,9 @@ install: $(OBJS)
 	
 lev_test:
 	g++ source/lev_suffix_tree_test.cpp $(CPPFLAGS) -ostree -O3
+	
+stitest:
+	g++ source/SuffixTreeIteratorTest.cpp $(CPPFLAGS) -ostitest -O3
 
 ifeq ($(OBJDIR),debug)
 all: CPPFLAGS = -Wall -g -pg

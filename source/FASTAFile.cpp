@@ -23,7 +23,8 @@ FASTAFile::FASTAFile(const char * file_name)
 	ifstream fin(file_name);
     if (!fin) {
 		cout << "Error: Unable to open FASTA file\n";
-		exit(1);  // terminate process for now - replace later with Exception
+		//exit(1);  // terminate process for now - replace later with Exception
+		return;
     } else {
 		cout << "File successfully opened\n";
     }
