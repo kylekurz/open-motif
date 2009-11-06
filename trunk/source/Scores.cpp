@@ -37,6 +37,7 @@ scores::scores()
 	//set all variables to zero in here
 	expect = -1;
 	variance = -1;
+	ratio = 0;
 }
 
 

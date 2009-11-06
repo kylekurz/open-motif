@@ -93,10 +93,12 @@ class rmes_model :  public word_scoring
 		//function to compute the seqs value of a motif  
 		int compute_seqs(string &motif, data *structure);                                                    
 		//function to give clustering access to seeds
-     		vector<pair<string, scores> > get_seeds();  
+	     	void get_seeds(vector<pair<string, scores> > &seeds);  
   
   
   	protected:
+  		//function to sort the top words vector
+  		static bool r_sort(const pair<string, scores> &i, const pair<string, scores> &j);
     		owef_args *list;      
 };
 

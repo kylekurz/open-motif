@@ -56,6 +56,8 @@ class scores
 		double expect;
 		//variance
 		double variance;	
+		//ratio
+		double ratio;
 };
 
 #endif
