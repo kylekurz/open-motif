@@ -332,7 +332,7 @@ scores* radix_trie::get_stats(string motif)
 
 #ifndef KKURZ_MPI
 //function to get word count
-int radix_trie::get_count(string motif)
+int radix_trie::get_count(string & motif)
 {
 	string temp = motif;
 	char *t = &temp[0];
@@ -341,7 +341,7 @@ int radix_trie::get_count(string motif)
 }
 
 //function to get sequence count
-int radix_trie::get_seqs(string motif)
+int radix_trie::get_seqs(string & motif)
 {
 	string temp = motif;
 	char *t = &temp[0];
@@ -350,7 +350,7 @@ int radix_trie::get_seqs(string motif)
 }
 
 //function to get the stats from a word
-scores* radix_trie::get_stats(string motif)
+scores* radix_trie::get_stats(string & motif)
 {
 	string temp = motif;
 	char *t = &temp[0];
@@ -361,7 +361,7 @@ scores* radix_trie::get_stats(string motif)
 
 //function to iteratively walk the regular expression provided and retrieve a list of all words
 //in the trie that match
-void radix_trie::get_regex_matches(vector<string> &matches, string regex)
+void radix_trie::get_regex_matches(vector<string> &matches, string & regex)
 {
 	vector<string> t1;
 	radix_trie_node *tmp = root;
@@ -521,7 +521,7 @@ int radix_trie::trie_set(radix_trie_node *node, char *s, int length, int count)
 }
 
 //function to set the statistics of a word in the trie
-int radix_trie::set_stats(string motif, scores *new_stats)
+int radix_trie::set_stats(string & motif, scores *new_stats)
 {
 	string temp = motif;
 	char *t = &temp[0];

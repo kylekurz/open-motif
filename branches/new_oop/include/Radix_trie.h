@@ -57,13 +57,13 @@ class radix_trie : public data
 		//************************************************************
 		
 		//function to get word count
-		int get_count(string motif);
+		int get_count(string & motif);
 		//function to get sequence count
-		int get_seqs(string motif);
+		int get_seqs(string & motif);
 		//function to get the statistics stored in a leaf node from the trie
-		scores* get_stats(string motif);
+		scores* get_stats(string & motif);
 		//function to return all words that match a regular expression
-		void get_regex_matches(vector<string> &matches, string regex);
+		void get_regex_matches(vector<string> &matches, string & regex);
 		//function to get all of the sequences from the input file
 		void get_seq_file(vector<string> &sequences);
 		//function to get a block of words
@@ -90,7 +90,7 @@ class radix_trie : public data
 		//function to increment count
 		int inc_count(string motif);	
 		//function to set the statistics of a word in the trie
-		int set_stats(string motif, scores *new_stats);
+		int set_stats(string & motif, scores *new_stats);
 		//function to set the statistics of a word in the trie
 		int trie_stats(radix_trie_node *node, char *s, int length, scores *new_stats);	
 		

@@ -11,12 +11,12 @@
 #include "SuffixTree.h"
 #include "Ds_iterator.h"
 
-
-
 class SuffixTreeIterator: public ds_iterator
 {
 	public:
-		SuffixTreeIterator(){}
+		SuffixTreeIterator()
+		{
+		}
 		SuffixTreeIterator( SuffixTree * stree, index_type word_length );
 		virtual ~SuffixTreeIterator();
 
@@ -30,7 +30,7 @@ class SuffixTreeIterator: public ds_iterator
 
 		void reset()
 		{
-			counter=0;
+			counter = 0;
 		}
 
 		/**

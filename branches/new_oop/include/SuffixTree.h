@@ -167,7 +167,7 @@ class SuffixTree: public data
 		void writeTextToFile( const char * file_name );
 
 		index_type naiveCount( std::string needle );
-		index_type count( std::string needle );
+		index_type count( std::string & needle );
 
 		void printNode( SuffixTreeNode * node, int rec );
 
@@ -188,23 +188,23 @@ class SuffixTree: public data
 		//************************************************************
 
 		//function to get word count
-		virtual int get_count( string motif )
+		virtual int get_count( string & motif )
 		{
 			return count(motif);
 		}
 		//function to get sequence count
-		virtual int get_seqs( string motif )
+		virtual int get_seqs( string & motif )
 		{
 			return get_count(motif)==0?0:1;
 		}
 		//function to get the statistics for a word
-		virtual scores* get_stats( string motif )
+		virtual scores* get_stats( string & motif )
 		{
 			if( scorez.find(motif)==scorez.end())return NULL;
 			return scorez[motif];
 		}
 		//function to return all words that match a regular expression
-		virtual void get_regex_matches( vector<string> &matches, string regex )
+		virtual void get_regex_matches( vector<string> &matches, string & regex )
 		{
 
 		}
@@ -217,7 +217,7 @@ class SuffixTree: public data
 		//************************************************************
 
 		//function to set the statistics of a word in the trie
-		virtual int set_stats( string motif, scores *new_stats )
+		virtual int set_stats( string & motif, scores *new_stats )
 		{
 			scorez[motif]=new_stats;
 			return 1;
