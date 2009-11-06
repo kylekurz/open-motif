@@ -22,13 +22,11 @@
 
 //#define USE_CUSTOM_NEW
 
-const bool SUFFIX_TREE_DEBUG_ON=true;
+const bool SUFFIX_TREE_DEBUG_ON = true;
 
 #define d_print(x) std::cout<<#x<<" = "<<(x)<<std::endl;
 
 typedef unsigned int index_type;
-
-
 
 inline int SuffixTreeCompOffset( char a )
 {
@@ -158,7 +156,7 @@ class SuffixTree: public data
 {
 	public:
 		SuffixTree();
-		SuffixTree(owef_args *list);
+		SuffixTree( owef_args *list );
 		virtual ~SuffixTree();
 
 		void readFile( const char * file_name );
@@ -190,17 +188,18 @@ class SuffixTree: public data
 		//function to get word count
 		virtual int get_count( string & motif )
 		{
-			return count(motif);
+			return count( motif );
 		}
 		//function to get sequence count
 		virtual int get_seqs( string & motif )
 		{
-			return get_count(motif)==0?0:1;
+			return get_count( motif ) == 0 ? 0 : 1;
 		}
 		//function to get the statistics for a word
 		virtual scores* get_stats( string & motif )
 		{
-			if( scorez.find(motif)==scorez.end())return NULL;
+			if (scorez.find( motif ) == scorez.end())
+				return NULL;
 			return scorez[motif];
 		}
 		//function to return all words that match a regular expression
@@ -208,7 +207,6 @@ class SuffixTree: public data
 		{
 
 		}
-
 
 		//************************************************************
 		//Modifiers
@@ -219,7 +217,10 @@ class SuffixTree: public data
 		//function to set the statistics of a word in the trie
 		virtual int set_stats( string & motif, scores *new_stats )
 		{
-			scorez[motif]=new_stats;
+#pragma omp critical
+			{
+				scorez[motif] = new_stats;
+			}
 			return 1;
 		}
 
@@ -250,8 +251,8 @@ class SuffixTree: public data
 		SuffixTreeNode * getNode( unsigned long long a, unsigned long long b );
 		SuffixTreeNode * NewSNode();
 
-		std::map<int,SuffixTreeIterator*> iterators;
-		std::map<std::string,scores*> scorez;
+		std::map<int, SuffixTreeIterator*> iterators;
+		std::map<std::string, scores*> scorez;
 };
 
 #endif /* SUFFIXTREE_H_ */
