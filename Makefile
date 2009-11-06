@@ -55,6 +55,9 @@ lev_test:
 stitest:
 	g++ source/SuffixTreeIteratorTest.cpp $(CPPFLAGS) -ostitest -O3
 
+sarray_test:
+	g++ source/sarray_test.cpp $(CPPFLAGS) -o sarray -O3
+
 ifeq ($(OBJDIR),debug)
 all: CPPFLAGS = -Wall -g -pg
 all: CPPFLAGS += $(addprefix -I ,$(INCLUDE_DIRECTORIES))

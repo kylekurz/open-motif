@@ -5,7 +5,11 @@
 
 #include "SuffixArray.h"
 
-SuffixArray::SuffixArray() {}
+SuffixArray::SuffixArray(const char *file_name) {
+	readFile(file_name);
+	current_word_idx = 0;
+	buildSA();
+}
 
 SuffixArray::SuffixArray(owef_args *list) {
 	using namespace std;
@@ -72,6 +76,13 @@ void SuffixArray::readFile(const char *file_name) {
     fin.close();  // close the input file
 }
 
+void SuffixArray::printArray() {
+	for (saidx_t i = 0; i < (int) array_size; i++) {
+		std::cout << "SA[ " << i << "]: " << SA[i] << "\t" 
+			      << text+SA[i] << std::endl;
+	}
+}
+
 std::string SuffixArray::get_next_word(int length) {
 	///static int current_word_idx = 0;
 
@@ -82,19 +93,35 @@ std::string SuffixArray::get_next_word(int length) {
 
 	sauchar_t next_word[length];
 
-	if (strlen((char *)text+SA[current_word_idx]) >= (unsigned int) length) {
+	/*if (strlen((char *)text+SA[current_word_idx]) >= (unsigned int) length) {
 		strncpy((char *)next_word, (char *)text+SA[current_word_idx], length);
 		next_word[length] = '\0'; // null-terminate
+		std::cout << "Next word: " << next_word << std::endl;
 	} else {  // error case
 		std::cout << "Error: current word shorter than desired length\n";
+		return "";
+	}*/
+
+	// skip over words shorter than desired length
+	while (strlen((char*)text+SA[current_word_idx]) < (unsigned int) length) {
+		++current_word_idx;
+	}
+	strncpy((char*)next_word, (char*)text+SA[current_word_idx], length);
+	next_word[length] = '\0';
+	///std::cout << "next_word_internal: " << next_word << std::endl;
+
+	if (current_word_idx+1 > array_size) {  // hack to avoid going over by 1
+		cout << "Error: looking past the end of the Suffix Array for word!\n";
 		return "";
 	}
 
 	while (strncmp((char*)next_word, 
 				   (char*)text+SA[current_word_idx+1], length) == 0) {
 		++current_word_idx;  // keep iterating over identical words
+		//cout << "increasing current_word_idx to: " << current_word_idx <<endl;
 	}
 
+	++current_word_idx;  // increase it by 1 either way
 	return string((char *) next_word);
 }
 

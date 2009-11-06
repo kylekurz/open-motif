@@ -24,7 +24,7 @@ typedef uint8_t sauchar_t;
 class SuffixArray : public data {
     public:
 		// constructors
-		SuffixArray();
+		SuffixArray(const char *file_name);
 		SuffixArray(owef_args *list);
 		virtual ~SuffixArray();
 
@@ -37,6 +37,8 @@ class SuffixArray : public data {
 		virtual int get_seqs(string& motif) { return 0; } 
 		virtual void get_regex_matches(vector<string>& matches, string& regex){}
 		virtual void output() {}
+		uint32_t arraySize() { return array_size; }
+		void printArray();
 
 		// modifiers
 		virtual void reset();
@@ -49,8 +51,8 @@ class SuffixArray : public data {
 		uint32_t current_word_idx;  // for reset() and get_next_word() 
 		std::map<std::string,scores*> scored_words;
 
-		void buildSA();
 		void readFile(const char *file_name);
+		void buildSA();
 		saidx_t BinarySearch(const sauchar_t *word, 
 							 uint32_t word_length, saidx_t low, saidx_t high);
 		saidx_t BinarySearchIterative(const sauchar_t *word, 
