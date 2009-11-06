@@ -53,13 +53,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "Data_structure.h"
 #include "Module_discovery.h"
 #include "OWEF_args.h"
-#include "Radix_trie.h"
+#include "Radix_trie.h"   // kkurz
 #include "Rmes_model.h"
 #include "Scores.h"
 #include "Word_family.h"
 #include "Word_scoring.h"
 
-#include "SuffixTree.h"
+#include "SuffixTree.h"   // lneiman
+#include "SuffixArray.h"  // lnau
 
 
 
