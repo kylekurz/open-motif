@@ -54,7 +54,8 @@ owef::owef(owef_args *from_input)
 	if(list->count)
 	{
 		//structure = new radix_trie(list);
-		structure = new SuffixTree(list);
+		//structure = new SuffixTree(list);
+		structure = new SuffixArray(list);
 	}
 	end = clock();
 	duration = (double)(end-start)/CLOCKS_PER_SEC;
