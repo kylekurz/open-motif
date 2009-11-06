@@ -5,6 +5,7 @@
 
 #include "SuffixArray.h"
 
+// for basic tests not incorporating the framework (sarray_test.cpp)
 SuffixArray::SuffixArray(const char *file_name) {
 	readFile(file_name);
 	current_word_idx = 0;
@@ -17,6 +18,11 @@ SuffixArray::SuffixArray(owef_args *list) {
 	readFile(list->seq_file.c_str());  // read input file
 	current_word_idx = 0;
 	buildSA();
+
+	// set up list members (such as iterators)
+	for (int i = 0; i < list->maxlength; i++) {
+		list->num_words[i] = numWords(i);
+	}
 }
 
 SuffixArray::~SuffixArray() {
@@ -24,6 +30,36 @@ SuffixArray::~SuffixArray() {
 	current_word_idx = 0; 
     delete[] SA;    // free SA indexes
 	delete[] text;  // free DNA string
+}
+
+// returns the number of words of a given length
+uint32_t SuffixArray::numWords(uint32_t length) {
+	uint32_t i, num_words = 0;
+	sauchar_t next_word[length];
+
+	if (length == 0)  return 0;
+
+	if (length > array_size) {  // should this be >= - only with $ char
+		cout << "Error: word length exceeds string size! - no words!\n";
+		return 0;
+	}
+
+	for (i = 0; i < array_size; i++) {
+		if (strlen((char*)text+SA[i]) < length) {
+			continue;		
+		} else {
+			strncpy((char*)next_word, (char*)text+SA[i], length);
+			next_word[length] = '\0';
+			++num_words;
+
+			while (strncmp((char*)next_word, 
+						   (char*)text+SA[i+1], length) == 0) {
+				++i;
+			}
+		}
+	}
+	
+	return num_words;
 }
 
 void SuffixArray::buildSA() {
@@ -131,7 +167,11 @@ int SuffixArray::get_count(string& motif) {
 }
 
 int SuffixArray::set_stats(string& motif, scores *new_stats) {
-	scored_words[motif] = new_stats;
+
+	#pragma omp critical  // TODO: move this!
+	{
+		scored_words[motif] = new_stats;
+	}
 	return 1;
 }
 
@@ -173,9 +213,9 @@ saidx_t SuffixArray::BinarySearch(const sauchar_t *word, uint32_t word_length,
 			right++;
 		}
 
-		cout << "Left: " << left << " right: " << right << endl;
+		///cout << "Left: " << left << " right: " << right << endl;
 		saidx_t total_occr = right-left+1;
-		cout << "Total Occr: " << total_occr << endl;
+		///cout << "Total Occr: " << total_occr << endl;
 //	for (saidx_t i = left; i <= right; i++) {
 //	    cout << "SA[" << i << "]: " 
 //	 << string((char *)text+SA[i]).substr(0, word_length) << endl;
