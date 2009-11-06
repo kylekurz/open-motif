@@ -123,8 +123,51 @@ word_family::word_family(owef_args *input_list,data *structure, word_scoring *mo
     		totalThreads = 0;
     		threadID = 0;
     		radix_trie *family_structure = new radix_trie(list, 1);
+    		
+    		vector<pair<string, scores> > word_list;
+    		model->get_seeds(word_list);
+    		
+    		#ifdef _OPENMP
+    		#pragma omp parallel for default(none) shared(nseq,ratio_file, i, structure, model, family_structure, word_list) private(j, threadID, families)
+    		#endif
+		for(j=0; j<static_cast<int>(word_list.size()); j++)
+		{
+			int temp_n = list->no_n;
+			if(list->no_n - i+list->minlength < 2)
+  				temp_n = list->no_n - i+list->minlength;
+			if(word_list[j].first.compare("") != 0)
+  			{
+				for (int k=1; k<static_cast<int> (word_list[j].first.length()-1); k++) 
+				{
+					for(int l=0; l<temp_n; l++)
+					{
+						if(k+l < static_cast<int>(word_list[j].first.length())-1)
+						{
+							string copy = word_list[j].first;
+							copy.replace(k, l+1, l+1, 'N');
+							if(family_structure->get_count(copy) == 0)
+							{
+								family_structure->inc_count(copy);
+								vector<double> ratio = create_family(copy, structure, model, list->order, nseq);
+								if(ratio.size() > 0)
+								{
+									#ifdef _OPENMP
+									#pragma omp critical
+									{
+										ratio_file << copy << ',' << ratio[0] << ',' << ratio[1] << endl;
+									}
+									#else
+									ratio_file << copy << ',' << ratio[0] << ',' << ratio[1] << endl;
+									#endif
+								}
+							}
+						}
+	    				}
+	    			}
+	    		}
+		}
 		
-		int num_blocks = (i + list->num_words[list->minlength-1]/BLOCK_SIZE) + 1;
+		/*int num_blocks = (i + list->num_words[list->minlength-1]/BLOCK_SIZE) + 1;
 		
 		#ifdef _OPENMP
     		#pragma omp parallel for default(none) shared(nseq,ratio_file, i, structure, model, family_structure, num_blocks) private(j, threadID, families)
@@ -181,7 +224,7 @@ word_family::word_family(owef_args *input_list,data *structure, word_scoring *mo
 		    		}
 	    		}
 	    		word_list.clear();
-  		}
+  		}*/
   		ratio_file.close();
   		fam_number += families.size();
   	}

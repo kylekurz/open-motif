@@ -50,9 +50,9 @@ install: $(OBJS)
 	$(CC) -o $(PROJ) $(CPPFLAGS) $(MAIN) $^ -lpthread
 
 ifeq ($(OBJDIR),debug)
-all: CPPFLAGS = -Wall -g -pg
+all: CPPFLAGS = -Wall -g -pg -fopenmp
 all: CPPFLAGS += $(addprefix -I ,$(INCLUDE_DIRECTORIES))
-install: CPPFLAGS = -Wall -g -pg
+install: CPPFLAGS = -Wall -g -pg -fopenmp
 install: CPPFLAGS += $(addprefix -I ,$(INCLUDE_DIRECTORIES))
 endif
 

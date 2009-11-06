@@ -30,6 +30,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 using namespace std;
 using namespace rmes;
 
+#define NUMSEEDS 100
+
 rmes_model::rmes_model()
 {
 //no op
@@ -61,7 +63,6 @@ rmes_model::rmes_model(owef_args *input_list,data *structure)
     	order = (i+list->minlength)-2;
   	if(order < 0)
     	order = 0;	
-    	double ratio=0.0;
     	double expect_p = 0.0;
     	stringstream stream_2;
     	ofstream ratio_file;
@@ -89,7 +90,7 @@ rmes_model::rmes_model(owef_args *input_list,data *structure)
 		structure->reset();
 		ds_iterator *it = new rt_iterator(list, structure, i+list->minlength);
 		#ifdef _OPENMP
-   		#pragma omp parallel for default(none) shared(it, maxCount, ratio_file, i, structure, order) private(expect_p, j, threadID, next_word, ratio)
+   		#pragma omp parallel for default(none) shared(it, maxCount, ratio_file, i, structure, order) private(expect_p, j, threadID, next_word)
    		#endif
    		for(j=0; j<list->num_words[i+list->minlength-1]; j++)
    		{
@@ -100,7 +101,8 @@ rmes_model::rmes_model(owef_args *input_list,data *structure)
 					next_word = it->next();
 			}
 			#else
-			next_word = structure->get_next_word(i+list->minlength);
+			if(it->has_next())
+				next_word = it->next();
 			#endif	
 			scores *word = NULL;
 			word = structure->get_stats(next_word);
@@ -110,7 +112,7 @@ rmes_model::rmes_model(owef_args *input_list,data *structure)
 				structure->set_stats(next_word, word);
 			}	
 				
-     	 		ratio = compute_ratio(word->expect, word->variance, structure->get_count(next_word));
+     	 		//ratio = compute_ratio(word->expect, word->variance, structure->get_count(next_word));
       
       			//Computing Compound Poisson Statistics
       			int overlap=0;
@@ -190,11 +192,40 @@ rmes_model::rmes_model(owef_args *input_list,data *structure)
 			#ifdef _OPENMP
 			#pragma omp critical
 			{
-				ratio_file << next_word << "," << structure->get_count(next_word) << "," << word->expect << "," << word->variance << "," << ratio << "," << expect_p << "," << lambda << "," << stat << "," << fact << endl;
+				ratio_file << next_word << "," << structure->get_count(next_word) << "," << word->expect << "," << word->variance << "," << word->ratio << "," << expect_p << "," << lambda << "," << stat << "," << fact << endl;
 			}
 			#else
-			ratio_file << next_word << "," << structure->get_count(next_word) << "," << word->expect << "," << word->variance << "," << ratio << "," << expect_p << "," << lambda << "," << stat << "," << fact << endl;
+			ratio_file << next_word << "," << structure->get_count(next_word) << "," << word->expect << "," << word->variance << "," << word->ratio << "," << expect_p << "," << lambda << "," << stat << "," << fact << endl;
 			#endif
+			if(static_cast<int>(next_word.length()) == list->maxlength)
+			{
+				if(static_cast<int>(top_words[0].size()) < NUMSEEDS)
+				{
+					pair<string, scores> temp;
+					temp = make_pair(next_word, *word);
+					top_words[0].push_back(temp);
+				}
+				else if(static_cast<int>(top_words[0].size()) == NUMSEEDS)
+				{
+					pair<string, scores> temp;
+					temp = make_pair(next_word, *word);
+					top_words[0].push_back(temp);
+					if(word->ratio > top_words[0][top_words[0].size()-1].second.ratio)
+						sort(top_words[0].begin(), top_words[0].end(), r_sort);
+				}
+				else
+				{
+					if(word->ratio > top_words[0][top_words[0].size()-1].second.ratio)
+					{
+						pair<string, scores> temp;
+						temp = make_pair(next_word, *word);
+						temp.first = top_words[0][top_words[0].size()-1].first;
+						temp.second = top_words[0][top_words[0].size()-1].second;
+						//top_words[0][top_words[0].size()-1] = temp;
+						sort(top_words[0].begin(), top_words[0].end(), r_sort);
+					}
+				}
+			}
 		}
 		ratio_file.close();
   	}
@@ -383,6 +414,7 @@ void rmes_model::compute_scores(scores *word, string &motif, data *structure, in
 	//cout << x << endl;
 	word->expect = x;
 	word->variance = condAsVar(motif,order,structure);
+	word->ratio = compute_ratio(word->expect, word->variance, structure->get_count(motif));
 	return;
 }
 
@@ -420,9 +452,10 @@ int  rmes_model::compute_seqs(string &motif, data *structure)
 {
 throw(-1);
 }
-vector<pair<string, scores> > rmes_model::get_seeds()
+void rmes_model::get_seeds(vector<pair<string, scores> > &seeds)
 {
-throw(-1);
+	seeds = top_words[0];
+	return;
 }
 
 double rmes_model::lower_tail(const double lambda, const double a, const long n) 
@@ -565,3 +598,11 @@ double rmes_model::quantile(const double p)
 
   return ret;
 }
+
+//r sort
+bool rmes_model::r_sort(const pair<string, scores> &i, const pair<string, scores> &j)
+{
+	return (i.second.ratio > j.second.ratio);
+}
+
+
