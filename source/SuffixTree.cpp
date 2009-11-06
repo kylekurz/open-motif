@@ -37,12 +37,15 @@ SuffixTree::SuffixTree(owef_args *list)
 			buildSTree();
 			if(SUFFIX_TREE_DEBUG_ON)
 				cout<<"done building Suffix Tree"<<endl;
-
-			for( int i = 1; i<= list->maxlength; ++i )
+			d_print(list->maxlength);
+			for( int i = 0; i< list->maxlength; ++i )
 			{
-					SuffixTreeIterator iter(this,i);
-					list->num_words[i]=iter.string_words.size();
+					SuffixTreeIterator * iter = new SuffixTreeIterator(this,i+1);
+					list->num_words[i]=iter->string_words.size();
+					d_print(iter->string_words.size());
+					this->iterators[i+1]=iter;
 			}
+			cout<<"made iterators"<<endl;
 		}
 
 index_type getFileSize( const char * file_name )
@@ -261,7 +264,7 @@ void SuffixTree::insertSuffix( index_type a )
 	}
 }
 
-index_type SuffixTree::count( std::string needle )
+index_type SuffixTree::count( std::string & needle )
 {
 	using namespace std;
 	SuffixTreeNode * walka = root->children[SuffixTreeCompOffset( needle[0] )];

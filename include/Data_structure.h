@@ -87,13 +87,13 @@ class data
 		//************************************************************
 
 		//function to get word count
-		virtual int get_count( string motif )=0;
+		virtual int get_count( string & motif )=0;
 		//function to get sequence count
-		virtual int get_seqs( string motif )=0;
+		virtual int get_seqs( string & motif )=0;
 		//function to get the statistics for a word
-		virtual scores* get_stats( string motif )=0;
+		virtual scores* get_stats( string & motif )=0;
 		//function to return all words that match a regular expression
-		virtual void get_regex_matches( vector<string> &matches, string regex )=0;
+		virtual void get_regex_matches( vector<string> &matches, string & regex )=0;
 		//function to get total count of a regex
 		//virtual pair<string, int> get_regex_counts(string motif)=0;
 
@@ -105,7 +105,7 @@ class data
 		//************************************************************
 
 		//function to set the statistics of a word in the trie
-		virtual int set_stats( string motif, scores *new_stats )=0;
+		virtual int set_stats( string & motif, scores *new_stats )=0;
 
 		//************************************************************
 		//General Purpose Functions

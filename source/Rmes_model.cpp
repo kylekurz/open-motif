@@ -86,14 +86,14 @@ rmes_model::rmes_model( owef_args *input_list, data *structure )
 		}
 
 		structure->reset();
-		/*
+
 		 #ifdef _OPENMP
 		 #pragma omp parallel for default(none) shared(maxCount, ratio_file, i, structure, order) private(expect_p, j, threadID, next_word, ratio)
 		 #endif
-		 */
+
 		for (j = 0; j < list->num_words[i + list->minlength - 1]; j++)
 		{
-			/*
+
 			 #ifdef _OPENMP
 			 #pragma omp critical
 
@@ -101,9 +101,11 @@ rmes_model::rmes_model( owef_args *input_list, data *structure )
 			 next_word = structure->get_next_word(i+list->minlength);
 			 }
 			 #else
-			 */
+
 			next_word = structure->get_next_word( i + list->minlength );
-			//#endif
+			#endif
+
+			int next_word_count = structure->get_count(next_word);
 
 			scores *word = NULL;
 			word = structure->get_stats( next_word );
@@ -116,7 +118,7 @@ rmes_model::rmes_model( owef_args *input_list, data *structure )
 				structure->set_stats( next_word, word );
 			}
 
-			ratio = compute_ratio( word->expect, word->variance, structure->get_count( next_word ) );
+			ratio = compute_ratio( word->expect, word->variance, next_word_count );
 
 			//Computing Compound Poisson Statistics
 			int overlap = 0;
@@ -177,7 +179,7 @@ rmes_model::rmes_model( owef_args *input_list, data *structure )
 						loi[x] += exp( double(x) * log( fac_am ) + log_fact[x - 1] - log_fact[y] - log_fact[y - 1] - log_fact[x - y] + double(y) * aux + (fac_am - 1.0) * word->expect );
 					}
 				}
-				if (structure->get_count( next_word ) <= word->expect)
+				if (next_word_count <= word->expect)
 				{
 					sign = -1;
 					proba = lower_tail( expect_p, fac_am, maxCount );
@@ -193,17 +195,17 @@ rmes_model::rmes_model( owef_args *input_list, data *structure )
 					stat = numeric_limits<double>::infinity();
 			}
 			fact = fac_am;
-			/*
+
 			 #ifdef _OPENMP
 			 #pragma omp critical
 			 {
-			 ratio_file << next_word << "," << structure->get_count(next_word) << "," << word->expect << "," << word->variance << "," << ratio << "," << expect_p << "," << lambda << "," << stat << "," << fact << endl;
+			 ratio_file << next_word << "," << next_word_count << "," << word->expect << "," << word->variance << "," << ratio << "," << expect_p << "," << lambda << "," << stat << "," << fact << endl;
 			 }
 			 #else
-			 */
-			ratio_file << next_word << "," << structure->get_count( next_word ) << "," << word->expect << "," << word->variance << "," << ratio << "," << expect_p << "," << lambda << "," << stat
+
+			ratio_file << next_word << "," << next_word_count << "," << word->expect << "," << word->variance << "," << ratio << "," << expect_p << "," << lambda << "," << stat
 					<< "," << fact << endl;
-			//#endif
+			#endif
 		}
 
 		ratio_file.close();
@@ -409,7 +411,6 @@ void rmes_model::compute_scores( scores *word, string &motif, data *structure, i
 {
 	using namespace std;
 	word->expect = condAsExpect( motif, order, structure );
-
 	word->variance = condAsVar( motif, order, structure );
 }
 
