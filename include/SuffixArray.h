@@ -39,6 +39,7 @@ class SuffixArray : public data {
 		virtual void output() {}
 		uint32_t arraySize() { return array_size; }
 		void printArray();
+		uint32_t numWords(uint32_t length); 
 
 		// modifiers
 		virtual void reset();
