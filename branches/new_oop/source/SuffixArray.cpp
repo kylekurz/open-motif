@@ -21,7 +21,7 @@ SuffixArray::SuffixArray(owef_args *list) {
 
 	// set up list members (such as iterators)
 	for (int i = 0; i < list->maxlength; i++) {
-		list->num_words[i] = numWords(i);
+		list->num_words[i] = numWords(i+1);  // numWords at i+1 (i=0,nw=1)
 	}
 }
 
@@ -183,7 +183,7 @@ scores* SuffixArray::get_stats(string& motif) {
 }
 
 void SuffixArray::reset() {
-	current_word_idx = 0;  // reset current word index 
+	current_word_idx = 0;  // reset current word index
 }
 
 // returns the number of occurrences of a word

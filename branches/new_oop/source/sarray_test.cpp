@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
 
 	cout << "Word: " << word << " occurs: " << SA.get_count(word) << " times\n";
 
-	for (uint32_t i = 2; i < SA.arraySize(); i++) {
+	for (uint32_t i = 0; i < SA.arraySize(); i++) {
 		cout << "# Words of Length: " << i << "\t" << SA.numWords(i) << endl;
 	}
 
