@@ -127,11 +127,16 @@ word_family::word_family(owef_args *input_list,data *structure, word_scoring *mo
     		vector<pair<string, scores> > word_list;
     		model->get_seeds(word_list);
     		
+    		//for(int i=
+    		
+    		printf("word list count: %d\n", word_list.size());
+    		
     		#ifdef _OPENMP
     		#pragma omp parallel for default(none) shared(nseq,ratio_file, i, structure, model, family_structure, word_list) private(j, threadID, families)
     		#endif
 		for(j=0; j<static_cast<int>(word_list.size()); j++)
 		{
+			//printf("word: %s\n", word_list[j].first.c_str());
 			int temp_n = list->no_n;
 			if(list->no_n - i+list->minlength < 2)
   				temp_n = list->no_n - i+list->minlength;
@@ -147,7 +152,14 @@ word_family::word_family(owef_args *input_list,data *structure, word_scoring *mo
 							copy.replace(k, l+1, l+1, 'N');
 							if(family_structure->get_count(copy) == 0)
 							{
-								family_structure->inc_count(copy);
+								#ifdef _OPENMP
+								#pragma omp critical
+								{
+								#endif
+									family_structure->inc_count(copy);
+								#ifdef _OPENMP
+								}
+								#endif
 								vector<double> ratio = create_family(copy, structure, model, list->order, nseq);
 								if(ratio.size() > 0)
 								{
