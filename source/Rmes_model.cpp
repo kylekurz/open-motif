@@ -192,40 +192,36 @@ rmes_model::rmes_model(owef_args *input_list,data *structure)
 			#ifdef _OPENMP
 			#pragma omp critical
 			{
-				ratio_file << next_word << "," << structure->get_count(next_word) << "," << word->expect << "," << word->variance << "," << word->ratio << "," << expect_p << "," << lambda << "," << stat << "," << fact << endl;
-			}
-			#else
-			ratio_file << next_word << "," << structure->get_count(next_word) << "," << word->expect << "," << word->variance << "," << word->ratio << "," << expect_p << "," << lambda << "," << stat << "," << fact << endl;
 			#endif
-			if(static_cast<int>(next_word.length()) == list->maxlength)
+				ratio_file << next_word << "," << structure->get_count(next_word) << "," << word->expect << "," << word->variance << "," << word->ratio << "," << expect_p << "," << lambda << "," << stat << "," << fact << endl;
+			#ifdef _OPENMP
+			}
+			#pragma omp critical
 			{
-				if(static_cast<int>(top_words[0].size()) < NUMSEEDS)
+			#endif
+				if(static_cast<int>(next_word.length()) == list->maxlength)
 				{
-					pair<string, scores> temp;
-					temp = make_pair(next_word, *word);
-					top_words[0].push_back(temp);
-				}
-				else if(static_cast<int>(top_words[0].size()) == NUMSEEDS)
-				{
-					pair<string, scores> temp;
-					temp = make_pair(next_word, *word);
-					top_words[0].push_back(temp);
-					if(word->ratio > top_words[0][top_words[0].size()-1].second.ratio)
-						sort(top_words[0].begin(), top_words[0].end(), r_sort);
-				}
-				else
-				{
-					if(word->ratio > top_words[0][top_words[0].size()-1].second.ratio)
+					//printf("checking %s, %f for top_words vector\n", next_word.c_str(), word->ratio);
+					if(static_cast<int>(top_words[0].size()) < NUMSEEDS)
 					{
 						pair<string, scores> temp;
 						temp = make_pair(next_word, *word);
-						temp.first = top_words[0][top_words[0].size()-1].first;
-						temp.second = top_words[0][top_words[0].size()-1].second;
-						//top_words[0][top_words[0].size()-1] = temp;
-						sort(top_words[0].begin(), top_words[0].end(), r_sort);
+						top_words[0].push_back(temp);
+					}
+					else
+					{
+						if(word->ratio > top_words[0][top_words[0].size()-1].second.ratio)
+						{
+							pair<string, scores> temp;
+							temp = make_pair(next_word, *word);
+							top_words[0][top_words[0].size()-1] = temp;
+							sort(top_words[0].begin(), top_words[0].end(), r_sort);
+						}
 					}
 				}
+			#ifdef _OPENMP
 			}
+			#endif
 		}
 		ratio_file.close();
   	}
@@ -602,6 +598,7 @@ double rmes_model::quantile(const double p)
 //r sort
 bool rmes_model::r_sort(const pair<string, scores> &i, const pair<string, scores> &j)
 {
+	//printf("%s, %f > %s, %f\n", i.first.c_str(), i.second.ratio, j.first.c_str(), j.second.ratio);
 	return (i.second.ratio > j.second.ratio);
 }
 

@@ -330,7 +330,9 @@ int main(int argc, char *argv[])
 		stream << "_" << from_input->maxlength;
 	if(from_input->score)
 		stream << "_" << from_input->order;
+	#ifdef KKURZ_MPI
 	stream << "_" << from_input->rank;
+	#endif
 	stream >> directory;
 	
 
