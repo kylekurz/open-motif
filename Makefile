@@ -30,6 +30,7 @@ endif
 ifeq ($(PLAT),seq)
 CC = g++
 CPPFLAGS = -Wall -Werror -O3 -fopenmp -ggdb
+CPPGPROFFLAGS = -Wall -Werror -O3 -pg  -fopenmp # gprof options
 endif
 
 SRCDIR := source
@@ -40,7 +41,7 @@ OBJDIR := $(if $(filter yes,$(DEBUG)),debug,release)
 INCLUDE_DIRECTORIES = include
 CPPFLAGS += $(addprefix -I ,$(INCLUDE_DIRECTORIES)) -ggdb
 
-SRCS := SuffixTree.cpp SuffixTreeIterator.cpp Ds_iterator.cpp FASTAFile.cpp FASTASequence.cpp Alphabet.cpp Cluster.cpp Counter.cpp Data_structure.cpp DNAAlphabet.cpp GFF_generator.cpp Motif.cpp Motif_logo.cpp Motif_scoring.cpp OWEF_args.cpp OWEF.cpp Radix_trie.cpp Radix_trie_leaf.cpp Radix_trie_node.cpp Rmes_model.cpp RMESString.cpp Scores.cpp Word.cpp Word_family.cpp Word_scoring.cpp divsufsort.cpp SuffixArray.cpp
+SRCS := SuffixTree.cpp SuffixTreeIterator.cpp Ds_iterator.cpp FASTAFile.cpp FASTASequence.cpp Alphabet.cpp Cluster.cpp Counter.cpp Data_structure.cpp DNAAlphabet.cpp GFF_generator.cpp Motif.cpp Motif_logo.cpp Motif_scoring.cpp OWEF_args.cpp OWEF.cpp Radix_trie.cpp Radix_trie_leaf.cpp Radix_trie_node.cpp Rmes_model.cpp RMESString.cpp Scores.cpp Word.cpp Word_family.cpp Word_scoring.cpp divsufsort.cpp SuffixArray.cpp 
 #SRCS := $(addprefix $(SRCDIR)/,$(SRCS))
 OBJS := $(addprefix $(OBJDIR)/,$(SRCS:.cpp=.o))
 
@@ -56,7 +57,7 @@ stitest:
 	g++ source/SuffixTreeIteratorTest.cpp $(CPPFLAGS) -ostitest -O3
 
 sarray_test:
-	g++ source/sarray_test.cpp $(CPPFLAGS) -o sarray -O3
+	g++ source/sarray_test.cpp release/SuffixArray.o release/Data_structure.o release/divsufsort.o $(CPPGPROFFLAGS) -o sarray 
 
 ifeq ($(OBJDIR),debug)
 all: CPPFLAGS = -Wall -g -pg
