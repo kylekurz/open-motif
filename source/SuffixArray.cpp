@@ -38,7 +38,7 @@ SuffixArray::~SuffixArray() {
 // returns the number of words of a given length
 uint32_t SuffixArray::numWords(uint32_t length) {
 	uint32_t i, num_words = 0;
-	sauchar_t next_word[length];
+	///sauchar_t next_word[length];
 
 	if (length == 0)  return 0;
 
@@ -48,18 +48,22 @@ uint32_t SuffixArray::numWords(uint32_t length) {
 	}
 
 	for (i = 0; i < array_size; i++) {
-		if (strlen((char*)text+SA[i]) < length) {
-			continue;		
-		} else {
-			strncpy((char*)next_word, (char*)text+SA[i], length);
-			next_word[length] = '\0';
+		///if (strlen((char*)text+SA[i]) < length) {
+			///continue;		
+		while (strlen((char*)text+SA[i]) < length) {
+			++i;
+		}
+		///} else {
+			///strncpy((char*)next_word, (char*)text+SA[i], length);
+			///next_word[length] = '\0';
 			++num_words;
 
-			while (strncmp((char*)next_word, 
+			///while (strncmp((char*)next_word, 
+			while (strncmp((char*)text+SA[i],
 						   (char*)text+SA[i+1], length) == 0) {
 				++i;
 			}
-		}
+		///}
 	}
 	
 	return num_words;
