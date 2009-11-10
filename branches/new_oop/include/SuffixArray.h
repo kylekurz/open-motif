@@ -58,6 +58,8 @@ class SuffixArray : public data {
 							 uint32_t word_length, saidx_t low, saidx_t high);
 		saidx_t BinarySearchIterative(const sauchar_t *word, 
 						              uint32_t word_length);		
+		inline bool STRNCMP(unsigned char *w1, unsigned char *w2, uint32_t length);
+		inline bool STRLESS(unsigned char *w, uint32_t length);
 };
 
 #endif  // SUFFIX_ARRAY_H

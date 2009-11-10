@@ -35,12 +35,28 @@ SuffixArray::~SuffixArray() {
 	delete[] text;  // free DNA string
 }
 
+inline bool SuffixArray::STRNCMP(unsigned char *w1, 
+								 unsigned char *w2, uint32_t length) {
+	for (uint32_t i = 0; i < length; i++) {
+		if (w1[i] != w2[i])
+			return false;
+	}
+	return true;
+}
+
+inline bool SuffixArray::STRLESS(unsigned char *w, uint32_t length) {
+	for (uint32_t i = 0; i < length; i++) {
+		if (w[i] == '\0')
+			return true;  // true if w is less
+	}
+	return false;  // false if the word ISN'T less
+}
+
 // returns the number of words of a given length
 uint32_t SuffixArray::numWords(uint32_t length) {
 	uint32_t i, num_words = 0;
-	///sauchar_t next_word[length];
 
-	if (length == 0)  return 0;
+	if (length == 0)  return 0;  // no words!
 
 	if (length > array_size) {  // should this be >= - only with $ char
 		cout << "Error: word length exceeds string size! - no words!\n";
@@ -48,22 +64,19 @@ uint32_t SuffixArray::numWords(uint32_t length) {
 	}
 
 	for (i = 0; i < array_size; i++) {
-		///if (strlen((char*)text+SA[i]) < length) {
-			///continue;		
-		while (strlen((char*)text+SA[i]) < length) {
+		
+		/*while (strlen((char*)text+SA[i]) < length) {*/
+		while (STRLESS(text+SA[i], length) == true) {
 			++i;
 		}
-		///} else {
-			///strncpy((char*)next_word, (char*)text+SA[i], length);
-			///next_word[length] = '\0';
-			++num_words;
+			
+		++num_words;
 
-			///while (strncmp((char*)next_word, 
-			while (strncmp((char*)text+SA[i],
-						   (char*)text+SA[i+1], length) == 0) {
-				++i;
-			}
-		///}
+		/*while (strncmp((char*)text+SA[i],
+						 (char*)text+SA[i+1], length) == 0) {*/
+		while (STRNCMP(text+SA[i], text+SA[i+1], length) == true) {
+			++i;
+		}
 	}
 	
 	return num_words;
@@ -127,46 +140,38 @@ void SuffixArray::printArray() {
 }
 
 std::string SuffixArray::get_next_word(int length) {
-	// moved this to class private member
 	// TODO: separate these two!
-	///static int current_word_idx = 0;
+	///static int current_word_idx = 0; // moved this to class private member
 
 	if (length > (int) array_size) {
 		cout << "Error: word length exceeds DNA string size!\n";
-		return "";
+		exit(1);  // TODO: replace with exception handling
 	}
-
-	sauchar_t next_word[length];
-
-	/*if (strlen((char *)text+SA[current_word_idx]) >= (unsigned int) length) {
-		strncpy((char *)next_word, (char *)text+SA[current_word_idx], length);
-		next_word[length] = '\0'; // null-terminate
-		std::cout << "Next word: " << next_word << std::endl;
-	} else {  // error case
-		std::cout << "Error: current word shorter than desired length\n";
-		return "";
-	}*/
 
 	// skip over words shorter than desired length
-	while (strlen((char*)text+SA[current_word_idx]) < (unsigned int) length) {
+	/*while (strlen((char*)text+SA[current_word_idx]) < (unsigned int) length) {*/
+	while (STRLESS(text+SA[current_word_idx], length) == true) {
 		++current_word_idx;
 	}
-	strncpy((char*)next_word, (char*)text+SA[current_word_idx], length);
-	next_word[length] = '\0';
 
 	if (current_word_idx+1 > array_size) {  // hack to avoid going over by 1
 		cout << "Error: looking past the end of the Suffix Array for word!\n";
-		return "";
+		exit(1);  // TODO: replace with exception handling
 	}
 
-	while (strncmp((char*)next_word, 
-				   (char*)text+SA[current_word_idx+1], length) == 0) {
+	/*while (strncmp((char*)next_word, 
+				   (char*)text+SA[current_word_idx+1], length) == 0) {*/
+	while (STRNCMP(text+SA[current_word_idx], 
+				   text+SA[current_word_idx+1], length) == true) {
 		++current_word_idx;  // keep iterating over identical words
-		//cout << "increasing current_word_idx to: " << current_word_idx <<endl;
 	}
 
-	++current_word_idx;  // increase it by 1 either way
-	return string((char *) next_word);
+	sauchar_t next_word[length];
+	strncpy((char*)next_word, (char*)text+SA[current_word_idx], length);
+	next_word[length] = '\0';
+	++current_word_idx;  // increase it by 1 either way for next word
+	return string((char*)next_word);
+	//return string((char *)text+SA[current_word_idx], length);
 }
 
 int SuffixArray::get_count(string& motif) {
@@ -198,8 +203,9 @@ void SuffixArray::reset() {
 saidx_t SuffixArray::BinarySearch(const sauchar_t *word, uint32_t word_length, 
 								  saidx_t low, saidx_t high) {
     if (high < low) {
-		cout << "Word does not occur: " << word << endl;
-		return -1;
+		//cout << "Word does not occur: " << word << endl;
+		//return -1;
+		return 0;
     }
     saidx_t mid = low + ((high - low) / 2);
     if (strncmp((char *)text+SA[mid], (char *)word, word_length) > 0) {
@@ -207,30 +213,26 @@ saidx_t SuffixArray::BinarySearch(const sauchar_t *word, uint32_t word_length,
     } else if (strncmp((char *)text+SA[mid], (char *)word, word_length) < 0) {
 		return BinarySearch(word, word_length, mid+1, high);
     } else {
-//	cout << string((char *)text+SA[mid]).substr(0, word_length) << " == " 
-//	     << word << endl;
 		saidx_t left = mid, right = mid;
 	
-		while (strncmp((char *)text+SA[left-1], 
-				       (char *)word, word_length) == 0) {
+		/*while (strncmp((char *)text+SA[left-1], 
+				       (char *)word, word_length) == 0) {*/
+		while (STRNCMP(text+SA[left-1], (unsigned char *)word, 
+										word_length) == true) {
 			left--; 
 		}
 	
-		while (strncmp((char*) text+SA[right+1], 
-					    (char *)word, word_length) == 0) {
+		/*while (strncmp((char*) text+SA[right+1], 
+					    (char *)word, word_length) == 0) {*/
+		while (STRNCMP(text+SA[right+1], (unsigned char *)word, 
+										 word_length) == true) {
 			right++;
 		}
 
-		///cout << "Left: " << left << " right: " << right << endl;
 		saidx_t total_occr = right-left+1;
-		///cout << "Total Occr: " << total_occr << endl;
-//	for (saidx_t i = left; i <= right; i++) {
-//	    cout << "SA[" << i << "]: " 
-//	 << string((char *)text+SA[i]).substr(0, word_length) << endl;
-//	}
 
-		//return mid;  // instead of returning index, return # occurrences
-		return total_occr;
+		//return mid;  // instead of returning index, see below
+		return total_occr;  // return # occurrences 
 	}
 }
 

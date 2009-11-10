@@ -15,19 +15,19 @@ using namespace std;
 
 int main(int argc, char *argv[])
 {
-	//const char *file_name = "bin/fakeDNA.fasta";
-	const char *file_name = "bin/Ecoli_Genome.fasta";
-    const uint8_t word_length = 2;
+	const char *file_name = "bin/fakeDNA.fasta";
+	//const char *file_name = "bin/Ecoli_Genome.fasta";
+    const uint8_t word_length = 8;
     ///const uint8_t markov_order = 6;
 
 	SuffixArray SA(file_name);
 
-	///SA.printArray();
+	SA.printArray();
 
-	//string word = "A";
-	//cout << "Word: " << word << " occurs: " << SA.get_count(word) << " times\n";
+	string word = "AC";
+	cout << "Word: " << word << " occurs: " << SA.get_count(word) << " times\n";
 
-	for (uint32_t i = 0; i < SA.arraySize(); i++) {
+	for (uint32_t i = 0; i < word_length /*SA.arraySize()*/; i++) {
 		cout << "# Words of Length: " << i << "\t" << SA.numWords(i) << endl;
 	}
 
@@ -35,7 +35,6 @@ int main(int argc, char *argv[])
 	for (uint32_t i = 0; i < SA.numWords(word_length); i++) {
 		cout << "next word: " << SA.get_next_word(word_length) << endl;
 	}
-
 
     return 0;
 }
