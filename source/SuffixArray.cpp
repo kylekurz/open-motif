@@ -23,6 +23,8 @@ SuffixArray::SuffixArray(owef_args *list) {
 	for (int i = 0; i < list->maxlength; i++) {
 		// index 0 in num_words contains words of length 1, and so on
 		list->num_words[i] = numWords(i+1);  
+		cout << "Words of length [" << i+1 << "] occur\t" 
+			 << list->num_words[i] << " times\n"; 
 	}
 }
 
@@ -81,7 +83,6 @@ uint32_t SuffixArray::numWords(uint32_t length) {
 }
 
 void SuffixArray::buildSA() {
-	using namespace std;
 	array_size = strlen((const char*) text);  // C string style
 	SA = new saidx_t[array_size];
 	cout << "Creating a Suffix Array with Num Elements: " << array_size << endl;
@@ -137,6 +138,7 @@ void SuffixArray::printArray() {
 	}
 }
 
+// TODO: make next_word a C++ string
 std::string SuffixArray::get_next_word(int length) {
 	// TODO: separate these two!
 	///static int current_word_idx = 0; // moved this to class private member
