@@ -21,10 +21,8 @@ SuffixArray::SuffixArray(owef_args *list) {
 
 	// set up list members (such as iterators)
 	for (int i = 0; i < list->maxlength; i++) {
-		cout << "Counting number of words up to max length...\n";
-		list->num_words[i] = numWords(i+1);  // numWords at i+1 (i=0,nw=1)
-		cout << "Number of words: " << list->num_words[i] 
-			 << " of length: " << i << endl; 
+		// index 0 in num_words contains words of length 1, and so on
+		list->num_words[i] = numWords(i+1);  
 	}
 }
 
