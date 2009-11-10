@@ -21,7 +21,10 @@ SuffixArray::SuffixArray(owef_args *list) {
 
 	// set up list members (such as iterators)
 	for (int i = 0; i < list->maxlength; i++) {
+		cout << "Counting number of words up to max length...\n";
 		list->num_words[i] = numWords(i+1);  // numWords at i+1 (i=0,nw=1)
+		cout << "Number of words: " << list->num_words[i] 
+			 << " of length: " << i << endl; 
 	}
 }
 
@@ -120,6 +123,8 @@ void SuffixArray::printArray() {
 }
 
 std::string SuffixArray::get_next_word(int length) {
+	// moved this to class private member
+	// TODO: separate these two!
 	///static int current_word_idx = 0;
 
 	if (length > (int) array_size) {
@@ -144,7 +149,6 @@ std::string SuffixArray::get_next_word(int length) {
 	}
 	strncpy((char*)next_word, (char*)text+SA[current_word_idx], length);
 	next_word[length] = '\0';
-	///std::cout << "next_word_internal: " << next_word << std::endl;
 
 	if (current_word_idx+1 > array_size) {  // hack to avoid going over by 1
 		cout << "Error: looking past the end of the Suffix Array for word!\n";
