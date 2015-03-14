@@ -1,0 +1,1 @@
+Enumeration, Scoring, and Clustering are used to determine motifs, while Module Discovery approaches are used to prepare composite motifs.
